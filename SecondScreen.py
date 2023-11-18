@@ -73,10 +73,7 @@ class SecondScreen:
        
        # Modificación del botón para que muestre el menú desplegable
             self.botonTablas = Menubutton(
-                
-                self.root,
                 image=self.photoTablas,
-                text="Seleccionar",
                 cursor='hand2',
                 borderwidth=0,
                 highlightthickness=0
@@ -85,13 +82,11 @@ class SecondScreen:
             self.botonTablas.menu = Menu(self.botonTablas, tearoff=0)
             self.botonTablas["menu"] = self.botonTablas.menu
 
-
             for opcion in opciones:
                 self.botonTablas.menu.add_command(
                     label=opcion,
                     command=lambda opt=opcion: abrir(self.frameMostrar,self.archivo,opt)
                 )
-            self.botonTablas.menu.config()
             self.botonTablas.place(
                 height=30,
                 width=70,
@@ -99,7 +94,6 @@ class SecondScreen:
                 y=26,
             )
             
-
             self.botonAbrir=Button(
                 image=self.photoAbrir,
                 cursor='hand2',
