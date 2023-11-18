@@ -12,6 +12,8 @@ class SecondScreen:
         self.root.title('Recursos Humanos')
         self.root.resizable(0, 0)
         self.root.config(bg='#082d44')
+        self.photoTablas = self.cargar_imagen('Tablas.png')
+        self.photoAbrir = self.cargar_imagen('Abrir.png')
 
         try:
             self.archivo = filedialog.askopenfilename(
@@ -90,7 +92,9 @@ class SecondScreen:
 
     def cargar_imagen(self, imagen_path):
         imagen = Image.open(imagen_path)
-        return ImageTk.PhotoImage(imagen)
+        imagen_tk = ImageTk.PhotoImage(imagen)
+        return imagen_tk
+
 
     def crear_boton(self, image_path, command, height, width, x, y):
         boton = tk.Button(
