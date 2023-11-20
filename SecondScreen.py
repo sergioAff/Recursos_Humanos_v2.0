@@ -54,10 +54,6 @@ class SecondScreen:
                 cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table'")
                 self.opciones = [fila[0] for fila in cursor.fetchall() if fila[0] != 'sqlite_sequence']
 
-            # Creación del menú desplegable
-            self.opcionSeleccionada = StringVar(self.root)
-            self.opcionSeleccionada.set(self.opciones[0])  # Opción predeterminada
-
             # Creacion y configuracion de cada botón
 
             # Modificación del botón para que muestre el menú desplegable

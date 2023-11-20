@@ -4,91 +4,11 @@ from tkinter import *
 from tkinter import ttk
 
 
-def borrar(archivo):
-        # Crear una ventana
-    ventana = Toplevel()
-    ventana.title("Eliminar Atributo o Tabla")
-
-        # Función para manejar el botón Eliminar
-    def eliminar():
-        tipo = tipo_entry.get().lower()
-        nombre = nombre_entry.get()
-
-            # Conectar a la base de datos
-        conn = sql.connect(archivo)
-        cursor = conn.cursor()
-
-            # Verificar si el tipo es "atributo"
-        if tipo == 'atributo':
-                # Solicitar el nombre de la tabla
-            tabla = tabla_entry.get()
-
-                # Verificar si la tabla existe
-            cursor.execute(f"PRAGMA table_info({tabla})")
-            if cursor.fetchall():
-                    # Verificar si el atributo existe en la tabla
-                cursor.execute(f"PRAGMA table_info({tabla})")
-                columnas = [column[1] for column in cursor.fetchall()]
-                if nombre in columnas:
-                        # Eliminar las referencias de clave externa primero
-                    cursor.execute(f"PRAGMA foreign_key_list({tabla})")
-                    foreign_keys = cursor.fetchall()
-                    for fk in foreign_keys:
-                        if fk[3] == nombre:
-                            cursor.execute(f"ALTER TABLE {tabla} DROP CONSTRAINT {fk[1]}")
-                        # Luego, eliminar el atributo
-                    try:
-                        cursor.execute(f"ALTER TABLE {tabla} DROP COLUMN {nombre}")
-                        conn.commit()
-                        messagebox.showinfo("Éxito", f"El atributo '{nombre}' ha sido eliminado con éxito de la tabla '{tabla}'.")
-                    except sql.OperationalError:
-                        messagebox.showerror('Error', 'No se puede borrar la llave primaria')
-                else:
-                    messagebox.showerror("Error", f"No se encontró el atributo '{nombre}' en la tabla '{tabla}'.")
-            else:
-                messagebox.showerror("Error", f"No se encontró la tabla '{tabla}' en la base de datos.")
-        elif tipo == 'tabla':
-            cursor.execute(f"DROP TABLE IF EXISTS {nombre}")
-            conn.commit()
-            messagebox.showinfo("Éxito", f"La tabla '{nombre}' ha sido eliminada con éxito.")
-        else:
-            messagebox.showerror("Error", "Por favor, ingrese 'tabla' o 'atributo' en el campo 'Tipo'.")
-            
-        conn.close()
-        ventana.destroy()
-
-        # Etiqueta y entrada para el tipo (atributo o tabla)
-    tipo_label = Label(ventana, text="Tipo (atributo o tabla):")
-    tipo_label.pack()
-    tipo_entry = Entry(ventana)
-    tipo_entry.pack()
-
-        # Etiqueta y entrada para el nombre
-    nombre_label = Label(ventana, text="Nombre:")
-    nombre_label.pack()
-    nombre_entry = Entry(ventana)
-    nombre_entry.pack()
-
-        # Etiqueta y entrada para la tabla (solo si se ingresa "atributo")
-    tabla_label = Label(ventana, text="Tabla (solo si es 'atributo'):")
-    tabla_label.pack()
-    tabla_entry = Entry(ventana)
-    tabla_entry.pack()
-
-        # Botón para eliminar
-    eliminar_button = Button(ventana, text="Eliminar", command=eliminar)
-    eliminar_button.pack()
-
-    ventana.mainloop()
-
-def abrir(frameMostrar, archivo, tabla):
+def tablas(frameMostrar, archivo, tabla):
     for widget in frameMostrar.winfo_children():
         widget.destroy()
 
-    # Solicitar el nombre de la tabla al usuario
-    nombre_tabla = tabla
-
-    tituloTabla = Label(text=f'Tabla: {nombre_tabla}', anchor='w')
+    tituloTabla = Label(text=f'Tabla: {tabla}', anchor='w')
     tituloTabla.config(bg='#082d44', font=(['Arial', 20]), fg='white')
     tituloTabla.place(
         height=40,
@@ -97,22 +17,22 @@ def abrir(frameMostrar, archivo, tabla):
         y=80
     )
 
-    if nombre_tabla:
+    if tabla:
         # Conectar a la base de datos
         conn = sql.connect(archivo)
         cursor = conn.cursor()
 
         # Verificar si la tabla existe
-        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name=?", (nombre_tabla,))
+        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name=?", (tabla,))
         tabla_existe = cursor.fetchone()
 
         if tabla_existe:
             # Obtener los nombres de los atributos de la tabla
-            cursor.execute(f"PRAGMA table_info({nombre_tabla})")
+            cursor.execute(f"PRAGMA table_info({tabla})")
             atributos = [column[1] for column in cursor.fetchall()]
 
             # Obtener los valores de la tabla
-            cursor.execute(f"SELECT * FROM {nombre_tabla}")
+            cursor.execute(f"SELECT * FROM {tabla}")
             valores = cursor.fetchall()
 
             # Crear el Treeview con estilo
@@ -166,47 +86,13 @@ def actualizar(archivo):
         return
 
     while True:
-        accion = simpledialog.askstring("Actualizar Base de Datos", "Seleccione la acción:\n\n1. Cambiar nombre de atributo\n2. Añadir atributo\n3. Borrar valor de campo\n4. Cambiar valor de campo\n5. Añadir valor de campo\n6. Añadir registro\n\nDeja en blanco para salir")
+        accion = simpledialog.askinteger("Actualizar Base de Datos", "Seleccione la acción:\n\n1. Cambiar valor de campo\n2. Añadir un valor de campo\n3-Para salir")
         if not accion:
             break
 
-        if accion == "1":
-            atributo_antiguo = simpledialog.askstring("Cambiar Nombre de Atributo", "Introduce el nombre del atributo que deseas cambiar:")
-            if atributo_antiguo:
-                atributo_nuevo = simpledialog.askstring("Cambiar Nombre de Atributo", f"Introduce el nuevo nombre para {atributo_antiguo}:")
-                if atributo_nuevo:
-                    cursor.execute(f"ALTER TABLE {nombre_tabla} RENAME COLUMN {atributo_antiguo} TO {atributo_nuevo}")
-                    conn.commit()
-
-        elif accion == "2":
-            atributo = simpledialog.askstring("Añadir Atributo", "Introduce el nombre del nuevo atributo:")
-            if atributo:
-                tipoDato = simpledialog.askstring("Añadir Atributo", "Introduce el tipo de dato del nuevo atributo: (1-texto, 2-numero entero, 3-numero decimal):")
-                if tipoDato.lower() == '1' or tipoDato.lower() == '2' or tipoDato.lower() == '3':
-                    if tipoDato.lower() == '1':
-                        tipoDato = 'text'
-                    elif tipoDato.lower() == '2':
-                        tipoDato = 'integer'
-                    elif tipoDato.lower() == '3':
-                        tipoDato = 'real'
-                    cursor.execute(f"ALTER TABLE {nombre_tabla} ADD COLUMN {atributo} {tipoDato}")
-                    conn.commit()
-
-        elif accion == "3":
-            campo = simpledialog.askstring("Borrar Valor de Campo", "Introduce el nombre del atributo al que pertenece el valor que quieres borrar: (Columna)")
-            if campo:
-                id_registro = simpledialog.askstring("Borrar Valor de Campo", "Introduce el ID del registro al que pertenece el valor que quieres borrar: (Fila)")
-                if id_registro:
-                    try:
-                        cursor.execute(f"UPDATE {nombre_tabla} SET {campo} = ? WHERE id = ?", (None, int(id_registro)))
-                        conn.commit()
-                        messagebox.showinfo("Éxito", f"Valor del campo '{campo}' eliminado para el registro con ID {id_registro}.")
-                    except Exception as e:
-                        messagebox.showerror("Error", str(e))
-
-        elif accion == "4":
+        elif accion == 1:
                 # Solicita el nombre del atributo (campo) a modificar
-            campo = simpledialog.askstring("Cambiar Valor de Campo", "Introduce el nombre del atributo (campo) al que pertenece el valor que deseas cambiar:")
+            campo = simpledialog.askstring("Cambiar Valor de Campo", "Introduce el nombre del atributo al que pertenece el valor que deseas cambiar:")
             if campo:
                     # Solicita el ID del registro que deseas modificar
                 id_registro = simpledialog.askstring("Cambiar Valor de Campo", "Introduce el ID del registro al que pertenece el valor que deseas cambiar:")
@@ -222,7 +108,7 @@ def actualizar(archivo):
                         except Exception as e:
                             messagebox.showerror("Error", str(e))
 
-        elif accion == "5":
+        elif accion == 2:
             campo = simpledialog.askstring("Añadir Valor de Campo", "Introduce el nombre del atributo donde se quiere añadir el valor:")
             if campo:
                 nuevo_valor = simpledialog.askstring("Añadir Valor de Campo", "Introduce el valor a añadir:")
@@ -234,7 +120,7 @@ def actualizar(archivo):
                     except Exception as e:
                         messagebox.showerror(f'No se encontró el atributo : {e}')
 
-        elif accion == "6":
+        elif accion == 4:
             cursor.execute(f"PRAGMA table_info({nombre_tabla})")
             atributos_info = cursor.fetchall()
             atributos = [column[1] for column in atributos_info]
@@ -271,5 +157,55 @@ def actualizar(archivo):
                 messagebox.showinfo("Éxito", "Registro agregado correctamente.")
             else:
                 messagebox.showerror("Error", "No se proporcionaron valores para todos los atributos.")
+        elif accion==3:
+            break
+def borrar(archivo):
+        # Crear una ventana
+    nombre_tabla=simpledialog.askstring('Tabla a modificar','Nombre de la tabla que quieres modificar')
+    if not nombre_tabla:
+        messagebox.showerror('Aviso', 'No se introdujo ningún nombre para la tabla')
+        return
+    
+    with sql.connect(archivo) as conn:
+        cursor=conn.cursor()
+        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name=?", (nombre_tabla,))
+        tabla_existe=cursor.fetchall()
 
-    conn.close()
+        if not tabla_existe:
+            messagebox.showerror('Alerta',f'{nombre_tabla} no existe en la base de datos')
+            return
+        
+        while True:
+            accion=simpledialog.askinteger('Borrar','Seleccione la acción\n\n1-Borrar registro\n2-Borrar un valor de un campo\n3-Para salir')
+            if not accion:
+                break
+        
+            elif accion ==1:
+                id_reg=simpledialog.askstring('Borrar','Ingrese el id del registro que se quiere eliminar o deje en blanco para regresar: ')
+                if not id_reg:
+                    continue
+
+                cursor.execute(f'SELECT * FROM {nombre_tabla} WHERE id=?',(id_reg,))    
+                registro=cursor.fetchall()
+
+                if registro is None:
+                    messagebox.showerror(f'El id {id_registro} no existe en la tabla {nombre_tabla}')
+
+                else:
+                    cursor.execute(f'DELETE FROM {nombre_tabla} WHERE id = ?',(id_reg,))
+                    messagebox.showinfo('Éxito',f'Se ha eliminado el registro con id {id_reg} de la tabla {nombre_tabla}')
+            
+            elif accion == 2:
+                campo = simpledialog.askstring("Borrar Valor de Campo", "Introduce el nombre del atributo al que pertenece el valor que quieres borrar: (Columna)")
+                if campo:
+                    id_registro = simpledialog.askstring("Borrar Valor de Campo", "Introduce el ID del registro al que pertenece el valor que quieres borrar: (Fila)")
+                    if id_registro:
+                        try:
+                            cursor.execute(f"UPDATE {nombre_tabla} SET {campo} = ? WHERE id = ?", (None, int(id_registro)))
+                            conn.commit()
+                            messagebox.showinfo("Éxito", f"Valor del campo '{campo}' eliminado para el registro con ID {id_registro}.")
+                        except Exception as e:
+                            messagebox.showerror("Error", str(e))
+
+            elif accion == 3:
+                break
