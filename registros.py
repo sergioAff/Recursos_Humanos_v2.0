@@ -12,7 +12,7 @@ from PIL import ImageTk, Image
 
 import sqlite3
 
-class Registro():
+class Registro_Trabajador():
     def __init__(self, archivo, raiz):
         self.archivo=archivo
         self.window=tk.Toplevel(raiz)  

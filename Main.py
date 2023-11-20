@@ -1,25 +1,28 @@
 from tkinter import *
-
 from PIL import Image, ImageTk
 from SecondScreen import SecondScreen
 
 class Screen:
-    def __init__(self):
-        # Creación y configuración de la raíz
-        self.root = Tk()
-        self.root.geometry('1000x800')
-        self.root.title('Recursos Humanos')
-        self.root.resizable(0,0)  # Permite redimensionar la ventana
-        self.root.config(bg='#082d44')
-        self.icono = PhotoImage(file='icono.png')
-        self.root.iconphoto(True, self.icono)
+    # Constantes para dimensiones de la ventana y botón
+    WINDOW_WIDTH = 1000
+    WINDOW_HEIGHT = 800
+    BUTTON_WIDTH = 290
+    BUTTON_HEIGHT = 90
 
-        # Carga de la imagen
-        try:
-            img_boton_comenzar = Image.open('Comenzar.png')
-            self.photoBotonComenzar = ImageTk.PhotoImage(img_boton_comenzar)
-        except Exception as e:
-            print(e)
+    def __init__(self):
+        # Inicialización de la interfaz de usuario
+        self.setup_ui()
+
+    def setup_ui(self):
+        # Configuración de la ventana principal
+        self.root = Tk()
+        self.root.geometry(f'{self.WINDOW_WIDTH}x{self.WINDOW_HEIGHT}')
+        self.root.title('Recursos Humanos')
+        self.root.resizable(0, 0)
+        self.root.config(bg='#082d44')
+
+        # Carga de imágenes
+        self.load_images()
 
         # Creación del botón Comenzar
         self.botonComenzar = Button(
@@ -30,24 +33,37 @@ class Screen:
             highlightthickness=0
         )
 
-        self.botonComenzar.place(
-            height=90,
-            width=290,
-            x=0,
-            y=0
-        )
-
-        # Centrar el botón en la ventana
-        self.root.update_idletasks()  # Forzar la actualización de la geometría
-        x = (self.root.winfo_width() - self.botonComenzar.winfo_reqwidth()) // 2+50
-        y = (self.root.winfo_height() - self.botonComenzar.winfo_reqheight()) // 2+20
-        self.botonComenzar.place(x=x, y=y)
+        # Posicionamiento centrado del botón
+        self.place_button_centered()
 
         self.root.mainloop()
 
+    def load_images(self):
+        try:
+            # Uso de 'with' para garantizar que el recurso se cierre adecuadamente
+            with Image.open('Comenzar.png') as img_boton_comenzar:
+                self.photoBotonComenzar = ImageTk.PhotoImage(img_boton_comenzar)
+        except Exception as e:
+            print(f"Error al cargar la imagen: {e}")
+
+    def place_button_centered(self):
+        # Posiciona el botón en el centro de la ventana
+        self.botonComenzar.place(
+            height=self.BUTTON_HEIGHT,
+            width=self.BUTTON_WIDTH,
+            x=(self.WINDOW_WIDTH - self.BUTTON_WIDTH) // 2,
+            y=(self.WINDOW_HEIGHT - self.BUTTON_HEIGHT) // 2
+        )
+
     def comenzar(self):
+        # Cierra la ventana actual y crea la segunda pantalla
         self.root.destroy()
         self.secondScreen = SecondScreen()
 
-if __name__ == "__main__":
+def run():
+    # Función para iniciar la aplicación
     Screen()
+
+if __name__ == "__main__":
+    # Llamada a la función 'run' solo si el script es ejecutado directamente
+    run()

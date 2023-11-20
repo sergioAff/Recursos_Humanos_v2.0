@@ -2,6 +2,7 @@ import sqlite3 as sql
 from tkinter import messagebox, simpledialog
 from tkinter import *
 from tkinter import ttk
+from registros import Registro_Trabajador
 
 
 def tablas(frameMostrar, archivo, tabla):
@@ -209,3 +210,6 @@ def borrar(archivo):
 
             elif accion == 3:
                 break
+
+def anadir(archivo,tabla):
+    pass
