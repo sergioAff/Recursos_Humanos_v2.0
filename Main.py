@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 from PIL import Image, ImageTk
 from SecondScreen import SecondScreen
 
@@ -20,7 +21,11 @@ class Screen:
         self.root.title('Recursos Humanos')
         self.root.resizable(0, 0)
         self.root.config(bg='#082d44')
-
+        try:
+            self.icono = PhotoImage(file='icono.png')
+            self.root.iconphoto(True, self.icono)
+        except Exception:
+            messagebox.showerror('Alerta','No se pudo cargar el icono')
         # Carga de imágenes
         self.load_images()
 
