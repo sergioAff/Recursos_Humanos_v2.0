@@ -21,13 +21,11 @@ class SecondScreen:
 
         try:
             # Selección del archivo de base de datos
-            self.archivo = self.select_database()
-            if self.archivo[-3:] != '.db':
-                messagebox.showerror('Alerta', 'No se seleccionó una base de datos correcta')
-                self.root.destroy()
-                return
+            self.archivo ='recursosHumanos.db'
         except Exception as e:
-            messagebox.showerror('Error', e)
+            messagebox.showerror('Error','Error al abir la base de datos')
+            self.root.destroy()
+            return
 
         # Carga de las opciones para el menú desplegable
         self.load_options()
@@ -37,10 +35,6 @@ class SecondScreen:
 
         # Bucle principal de la interfaz gráfica
         self.root.mainloop()
-
-    def select_database(self):
-        # Diálogo para seleccionar el archivo de base de datos
-        return filedialog.askopenfilename(initialdir="/", title="Selecciona la base de datos", filetypes=(("Bases de datos", "*.db"), ("all files", "*.*")))
 
     def create_widgets(self):
         # Creación de los elementos gráficos (botones, frames, etc.)
