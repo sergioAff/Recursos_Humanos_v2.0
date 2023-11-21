@@ -52,9 +52,9 @@ class SecondScreen:
         # Creación del frame para mostrar los datos
         self.frameMostrar = Frame(self.root, bg='#082d44', borderwidth=0, highlightthickness=0)
         self.frameMostrar.place(
-            height=650,
-            width=900,
-            x=50,
+            height=660,
+            width=970,
+            x=20,
             y=130)
         self.frameMostrar.grid_rowconfigure(0, weight=1)
         self.frameMostrar.grid_columnconfigure(0, weight=1)
@@ -104,6 +104,7 @@ class SecondScreen:
 
     def show_table_and_buttons(self, table_name):
         # Muestra la tabla seleccionada y activa los otros botones
+        self.tabla_actual = table_name
         tablas(self.frameMostrar, self.archivo, table_name)
         self.create_all_buttons()
 
@@ -133,11 +134,11 @@ class SecondScreen:
     def create_command(self, option):
         # Función para crear el comando asociado a cada botón
         if option == "Añadir":
-            lambda: anadir()
+            anadir(self.archivo, self.tabla_actual)
         elif option == "Actualizar":
-            lambda: actualizar(self.archivo)
+            actualizar(self.archivo, self.tabla_actual)
         elif option == "Borrar":
-            lambda: borrar(self.archivo)
+            borrar(self.archivo,self.tabla_actual)
     
     def load_options(self):
         # Obtención de las opciones para el menú desplegable

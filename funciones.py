@@ -69,29 +69,15 @@ def tablas(frameMostrar, archivo, tabla):
 
         conn.close()
 
-def actualizar(archivo):
-    nombre_tabla = simpledialog.askstring('Tabla a trabajar', 'Nombre de la tabla en la que quiere trabajar')
-    if not nombre_tabla:
-        messagebox.showerror('Aviso', 'No se introdujo ningún nombre para la tabla')
-        return
+def actualizar(archivo, tabla_actual):
 
-    conn = sql.connect(archivo)
-    cursor = conn.cursor()
-
-    cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name=?", (nombre_tabla,))
-    tabla_existe = cursor.fetchone()
-
-    if not tabla_existe:
-        messagebox.showerror('Aviso', f'{nombre_tabla} no existe en la base de datos')
-        conn.close()
-        return
+    with sql.connect(archivo) as conn:
+            cursor = conn.cursor()
 
     while True:
         accion = simpledialog.askinteger("Actualizar Base de Datos", "Seleccione la acción:\n\n1. Cambiar valor de campo\n2. Añadir un valor de campo\n3-Para salir")
-        if not accion:
-            break
 
-        elif accion == 1:
+        if accion == 1:
                 # Solicita el nombre del atributo (campo) a modificar
             campo = simpledialog.askstring("Cambiar Valor de Campo", "Introduce el nombre del atributo al que pertenece el valor que deseas cambiar:")
             if campo:
@@ -99,30 +85,88 @@ def actualizar(archivo):
                 id_registro = simpledialog.askstring("Cambiar Valor de Campo", "Introduce el ID del registro al que pertenece el valor que deseas cambiar:")
                 if id_registro:
                         # Solicita el nuevo valor para el campo
-                    nuevo_valor = simpledialog.askstring("Cambiar Valor de Campo", f"Introduce el nuevo valor para el campo '{campo}':")
+                    nuevo_valor = simpledialog.askstring("Cambiar Valor de Campo", "Introduce el nuevo valor para el campo:")
                     if nuevo_valor is not None:
                         try:
                                 # Actualiza el valor en la base de datos
-                            cursor.execute(f"UPDATE {nombre_tabla} SET {campo} = ? WHERE id = ?", (nuevo_valor, int(id_registro)))
+                            cursor.execute(f"UPDATE {tabla_actual} SET {campo} = ? WHERE id = ?", (nuevo_valor, int(id_registro)))
                             conn.commit()
                             messagebox.showinfo("Éxito", f"Valor del campo '{campo}' actualizado para el registro con ID {id_registro}.")
                         except Exception as e:
-                            messagebox.showerror("Error", str(e))
-
+                            messagebox.showerror("Error", str(e), ': Algun dato de los que insertó es erróneo' )
+                    else:
+                        continue
+                else:
+                    continue
+            else:
+                continue
+        
         elif accion == 2:
             campo = simpledialog.askstring("Añadir Valor de Campo", "Introduce el nombre del atributo donde se quiere añadir el valor:")
             if campo:
                 nuevo_valor = simpledialog.askstring("Añadir Valor de Campo", "Introduce el valor a añadir:")
                 if nuevo_valor:
                     try:
-                        cursor.execute(f"INSERT INTO {nombre_tabla} ({campo}) VALUES (?)", (nuevo_valor,))
+                        cursor.execute(f"INSERT INTO {tabla_actual} ({campo}) VALUES (?)", (nuevo_valor,))
                         conn.commit()
                         messagebox.showinfo("Éxito", f"Valor '{nuevo_valor}' añadido al campo '{campo}'.")
                     except Exception as e:
                         messagebox.showerror(f'No se encontró el atributo : {e}')
+                else:
+                    continue
+            else:
+                continue
+        
+        elif accion==3:
+            break
 
-        elif accion == 4:
-            cursor.execute(f"PRAGMA table_info({nombre_tabla})")
+def borrar(archivo, tabla_actual):
+    
+    with sql.connect(archivo) as conn:
+        cursor=conn.cursor()
+
+        while True:
+            accion=simpledialog.askinteger('Borrar','Seleccione la acción\n\n1-Borrar registro\n2-Borrar un valor de un campo\n3-Para salir')
+
+            if accion ==1:
+                id_reg=simpledialog.askstring('Borrar','Ingrese el id del registro que se quiere eliminar o deje en blanco para regresar: ')
+                if not id_reg:
+                    continue
+
+                cursor.execute(f'SELECT * FROM {tabla_actual} WHERE id=?',(id_reg,))    
+                registro=cursor.fetchall()
+
+                if registro is None:
+                    messagebox.showerror(f'El id {id_registro} no existe en la tabla {tabla_actual}')
+                else:
+                    cursor.execute(f'DELETE FROM {tabla_actual} WHERE id = ?',(id_reg,))
+                    messagebox.showinfo('Éxito',f'Se ha eliminado el registro con id {id_reg} de la tabla {tabla_actual}')
+            
+            elif accion == 2:
+                campo = simpledialog.askstring("Borrar Valor de Campo", "Introduce el nombre del atributo al que pertenece el valor que quieres borrar:")
+                if campo:
+                    id_registro = simpledialog.askstring("Borrar Valor de Campo", "Introduce el ID del registro al que pertenece el valor que quieres borrar:")
+                    if id_registro:
+                        try:
+                            cursor.execute(f"UPDATE {tabla_actual} SET {campo} = ? WHERE id = ?", (None, int(id_registro)))
+                            messagebox.showinfo("Éxito", f"Valor del campo eliminado para el registro con ID.")
+                        except Exception as e:
+                            messagebox.showerror("Error", str(e))
+                    else:
+                        continue
+            elif accion == 3:
+                break
+
+def anadir(archivo, tabla_actual):
+    pass
+
+
+
+
+
+#Este codigo puede servir para guardar los nuevos registros en la base de datos
+""""elif accion == 4:
+            cursor.execute(f"PRAGMA table_info({tabla_actual})")
             atributos_info = cursor.fetchall()
             atributos = [column[1] for column in atributos_info]
             autoincrementable = any(col[1] == 'INTEGER' and 'autoincrement' in col[2].lower() for col in atributos_info)
@@ -139,7 +183,7 @@ def actualizar(archivo):
                     provided_id = valores[id_index]
 
                     if provided_id:
-                        cursor.execute(f"SELECT id FROM {nombre_tabla} WHERE id = ?", (provided_id,))
+                        cursor.execute(f"SELECT id FROM {tabla_actual} WHERE id = ?", (provided_id,))
                         existing_id = cursor.fetchone()
                         if existing_id:
                             messagebox.showerror("Error", "El ID proporcionado ya existe en la tabla.")
@@ -152,64 +196,9 @@ def actualizar(archivo):
                     valores = valores[1:]
             
                 placeholders = ', '.join(['?' for _ in atributos])
-                query = f"INSERT INTO {nombre_tabla} ({', '.join(atributos)}) VALUES ({placeholders})"
+                query = f"INSERT INTO {tabla_actual} ({', '.join(atributos)}) VALUES ({placeholders})"
                 cursor.execute(query, valores)
                 conn.commit()
                 messagebox.showinfo("Éxito", "Registro agregado correctamente.")
             else:
-                messagebox.showerror("Error", "No se proporcionaron valores para todos los atributos.")
-        elif accion==3:
-            break
-def borrar(archivo):
-        # Crear una ventana
-    nombre_tabla=simpledialog.askstring('Tabla a modificar','Nombre de la tabla que quieres modificar')
-    if not nombre_tabla:
-        messagebox.showerror('Aviso', 'No se introdujo ningún nombre para la tabla')
-        return
-    
-    with sql.connect(archivo) as conn:
-        cursor=conn.cursor()
-        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name=?", (nombre_tabla,))
-        tabla_existe=cursor.fetchall()
-
-        if not tabla_existe:
-            messagebox.showerror('Alerta',f'{nombre_tabla} no existe en la base de datos')
-            return
-        
-        while True:
-            accion=simpledialog.askinteger('Borrar','Seleccione la acción\n\n1-Borrar registro\n2-Borrar un valor de un campo\n3-Para salir')
-            if not accion:
-                break
-        
-            elif accion ==1:
-                id_reg=simpledialog.askstring('Borrar','Ingrese el id del registro que se quiere eliminar o deje en blanco para regresar: ')
-                if not id_reg:
-                    continue
-
-                cursor.execute(f'SELECT * FROM {nombre_tabla} WHERE id=?',(id_reg,))    
-                registro=cursor.fetchall()
-
-                if registro is None:
-                    messagebox.showerror(f'El id {id_registro} no existe en la tabla {nombre_tabla}')
-
-                else:
-                    cursor.execute(f'DELETE FROM {nombre_tabla} WHERE id = ?',(id_reg,))
-                    messagebox.showinfo('Éxito',f'Se ha eliminado el registro con id {id_reg} de la tabla {nombre_tabla}')
-            
-            elif accion == 2:
-                campo = simpledialog.askstring("Borrar Valor de Campo", "Introduce el nombre del atributo al que pertenece el valor que quieres borrar: (Columna)")
-                if campo:
-                    id_registro = simpledialog.askstring("Borrar Valor de Campo", "Introduce el ID del registro al que pertenece el valor que quieres borrar: (Fila)")
-                    if id_registro:
-                        try:
-                            cursor.execute(f"UPDATE {nombre_tabla} SET {campo} = ? WHERE id = ?", (None, int(id_registro)))
-                            conn.commit()
-                            messagebox.showinfo("Éxito", f"Valor del campo '{campo}' eliminado para el registro con ID {id_registro}.")
-                        except Exception as e:
-                            messagebox.showerror("Error", str(e))
-
-            elif accion == 3:
-                break
-
-def anadir(archivo,tabla):
-    pass
+                messagebox.showerror("Error", "No se proporcionaron valores para todos los atributos.")"""
