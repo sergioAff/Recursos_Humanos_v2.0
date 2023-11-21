@@ -69,7 +69,7 @@ def tablas(frameMostrar, archivo, tabla):
 
         conn.close()
 
-def actualizar(archivo, tabla_actual):
+def actualizar(frameMostrar ,archivo, tabla_actual):
 
     with sql.connect(archivo) as conn:
             cursor = conn.cursor()
@@ -92,8 +92,10 @@ def actualizar(archivo, tabla_actual):
                             cursor.execute(f"UPDATE {tabla_actual} SET {campo} = ? WHERE id = ?", (nuevo_valor, int(id_registro)))
                             conn.commit()
                             messagebox.showinfo("Éxito", f"Valor del campo '{campo}' actualizado para el registro con ID {id_registro}.")
+                            tablas(frameMostrar,archivo,tabla_actual)
                         except Exception as e:
                             messagebox.showerror("Error", str(e), ': Algun dato de los que insertó es erróneo' )
+
                     else:
                         continue
                 else:
@@ -110,6 +112,7 @@ def actualizar(archivo, tabla_actual):
                         cursor.execute(f"INSERT INTO {tabla_actual} ({campo}) VALUES (?)", (nuevo_valor,))
                         conn.commit()
                         messagebox.showinfo("Éxito", f"Valor '{nuevo_valor}' añadido al campo '{campo}'.")
+                        tablas(frameMostrar,archivo,tabla_actual)
                     except Exception as e:
                         messagebox.showerror(f'No se encontró el atributo : {e}')
                 else:
@@ -120,7 +123,7 @@ def actualizar(archivo, tabla_actual):
         elif accion==3:
             break
 
-def borrar(archivo, tabla_actual):
+def borrar(frameMostrar,archivo, tabla_actual):
     
     with sql.connect(archivo) as conn:
         cursor=conn.cursor()
@@ -140,6 +143,8 @@ def borrar(archivo, tabla_actual):
                     messagebox.showerror(f'El id {id_registro} no existe en la tabla {tabla_actual}')
                 else:
                     cursor.execute(f'DELETE FROM {tabla_actual} WHERE id = ?',(id_reg,))
+                    conn.commit()
+                    tablas(frameMostrar,archivo,tabla_actual)
                     messagebox.showinfo('Éxito',f'Se ha eliminado el registro con id {id_reg} de la tabla {tabla_actual}')
             
             elif accion == 2:
@@ -149,6 +154,8 @@ def borrar(archivo, tabla_actual):
                     if id_registro:
                         try:
                             cursor.execute(f"UPDATE {tabla_actual} SET {campo} = ? WHERE id = ?", (None, int(id_registro)))
+                            conn.commit()
+                            tablas(frameMostrar,archivo,tabla_actual)
                             messagebox.showinfo("Éxito", f"Valor del campo eliminado para el registro con ID.")
                         except Exception as e:
                             messagebox.showerror("Error", str(e))

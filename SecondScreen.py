@@ -75,7 +75,7 @@ class SecondScreen:
             self.photoBorrar = ImageTk.PhotoImage(img_boton_borrar)
 
         except Exception as e:
-            messagebox.showerror('Error', e)
+            messagebox.showerror('Error', 'Falta algún archivo')
 
     def create_tablas_button(self):
         # Creación del botón de tablas
@@ -134,11 +134,11 @@ class SecondScreen:
     def create_command(self, option):
         # Función para crear el comando asociado a cada botón
         if option == "Añadir":
-            anadir(self.archivo, self.tabla_actual)
+            anadir(self.frameMostrar,self.archivo, self.tabla_actual)
         elif option == "Actualizar":
-            actualizar(self.archivo, self.tabla_actual)
+            actualizar(self.frameMostrar, self.archivo, self.tabla_actual)
         elif option == "Borrar":
-            borrar(self.archivo,self.tabla_actual)
+            borrar(self.frameMostrar,self.archivo,self.tabla_actual)
     
     def load_options(self):
         # Obtención de las opciones para el menú desplegable
