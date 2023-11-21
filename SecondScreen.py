@@ -1,7 +1,7 @@
 from tkinter import *
 from PIL import Image, ImageTk 
 from funciones import tablas, anadir, actualizar, borrar
-from tkinter import filedialog, messagebox
+from tkinter import messagebox
 import sqlite3 as sql
 
 class SecondScreen:
@@ -104,9 +104,9 @@ class SecondScreen:
 
     def create_all_buttons(self):
         # Creación de los botones de la interfaz gráfica
-        self.create_button(self.photoAnadir, 34, 110, 150, 24, lambda: self.create_command("Añadir"))
-        self.create_button(self.photoActualizar, 35, 183, 300, 19, lambda: self.create_command("Actualizar"))
-        self.create_button(self.photoBorrar, 40, 110, 530, 22, lambda: self.create_command("Borrar"))
+        self.create_button(self.photoAnadir, 34, 110, 160, 26, lambda: self.create_command("Añadir"))
+        self.create_button(self.photoActualizar, 35, 183, 310, 21, lambda: self.create_command("Actualizar"))
+        self.create_button(self.photoBorrar, 40, 110, 540, 22, lambda: self.create_command("Borrar"))
 
     def create_button(self, image, height, width, x, y, command):
         # Función genérica para crear botones

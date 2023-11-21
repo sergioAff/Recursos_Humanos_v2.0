@@ -65,10 +65,6 @@ class Screen:
         self.root.destroy()
         self.secondScreen = SecondScreen()
 
-def run():
-    # Función para iniciar la aplicación
-    Screen()
-
 if __name__ == "__main__":
     # Llamada a la función 'run' solo si el script es ejecutado directamente
-    run()
+    Screen()
