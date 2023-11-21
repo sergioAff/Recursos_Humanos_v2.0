@@ -89,6 +89,8 @@ class SecondScreen:
                 label=opcion,
                 command=lambda opt=opcion: self.show_table_and_buttons(opt)
             )
+        
+        self.tabla_seleccionada=opcion
 
         self.botonTablas.place(
             height=30,
@@ -128,14 +130,15 @@ class SecondScreen:
 
     def create_command(self, option):
         # Función para crear el comando asociado a cada botón
-        registro=Registro(self.archivo,self.tabla_actual)
+        registro=Registro(self.archivo, self.tabla_actual)
 
         if option == "Añadir":
-            registro.anadir(self.tabla_actual)
+            registro.anadir()
+            self.tablas(self.frameMostrar,self.archivo, self.tabla_seleccionada)
         elif option == "Actualizar":
-            registro.actualizar(self.tabla_actual)
+            registro.actualizar()
         elif option == "Borrar":
-            registro.borrar(self.tabla_actual)
+            registro.borrar()
     
     def load_options(self):
         # Obtención de las opciones para el menú desplegable
