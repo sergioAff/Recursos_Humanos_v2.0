@@ -134,11 +134,11 @@ class SecondScreen:
     def create_command(self, option):
         # Función para crear el comando asociado a cada botón
         if option == "Añadir":
-            anadir(self.frameMostrar,self.archivo, self.tabla_actual)
+            anadir(self.frameMostrar, self.archivo, self.tabla_actual)
         elif option == "Actualizar":
             actualizar(self.frameMostrar, self.archivo, self.tabla_actual)
         elif option == "Borrar":
-            borrar(self.frameMostrar,self.archivo,self.tabla_actual)
+            borrar(self.frameMostrar, self.archivo,self.tabla_actual)
     
     def load_options(self):
         # Obtención de las opciones para el menú desplegable
