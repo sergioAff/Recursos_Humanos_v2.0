@@ -2,7 +2,7 @@ from tkinter import *
 from PIL import ImageTk, Image
 import sqlite3 as sql
 from tkinter import messagebox
-
+import traceback
 class Registro:
 
     def __init__(self, archivo, tabla_actual, tipo):
@@ -106,7 +106,7 @@ class Registro:
 
     def actualizar(self):
         # Obtener la clave primaria y sus índices
-        self.entries[0].config(state=DISABLED)
+
         primary_key_index = None
         primary_key_name = None
         for atributo in self.atributos:

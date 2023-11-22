@@ -234,8 +234,10 @@ class SecondScreen:
                             self.treeview.pack(fill="both", expand=True)
 
                         return self.treeview
+            except TypeError :
+                messagebox.showinfo("Alerta", f"La tabla {tabla_existe} está vacía")
             except Exception as e:
-                messagebox.showerror("Error", f"No se pudo cargar la tabla: {str(e)}")
+                messagebox.showinfo("Error", f"No se pudo cargar la tabla: {str(e)}")
 
 
     def borrar(self, registros, tabla_actual):
