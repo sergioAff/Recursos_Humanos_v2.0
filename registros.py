@@ -2,7 +2,7 @@ from tkinter import *
 from PIL import ImageTk, Image
 import sqlite3 as sql
 from tkinter import messagebox
-import traceback
+
 class Registro:
 
     def __init__(self, archivo, tabla_actual, tipo):
@@ -96,17 +96,19 @@ class Registro:
 
 
     def cargar(self, datos):
+        self.datos = datos
 
-        self.datos=datos
         # Carga las Entry widgets con los nuevos datos
         for i, atributo in enumerate(self.atributos):
             entry_widget = self.entries[atributo[1]]
-            entry_widget.delete(0, END)
-            entry_widget.insert(0, datos[i])
+        
+            # Verifica si hay suficientes elementos en la lista datos
+            if i < len(datos):
+                entry_widget.delete(0, END)
+                entry_widget.insert(0, datos[i])
 
     def actualizar(self):
         # Obtener la clave primaria y sus índices
-
         primary_key_index = None
         primary_key_name = None
         for atributo in self.atributos:
@@ -117,6 +119,7 @@ class Registro:
         
         # guarda el valor de la llave primaria
         primary_key_value = self.entries[primary_key_name].get()
+
 
         # Verificar si hay cambios en los valores antes de la actualización
         nuevos_valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -142,5 +145,3 @@ class Registro:
 
             messagebox.showinfo("Éxito", "Registro actualizado exitosamente.")
             self.window.destroy()
-
-    

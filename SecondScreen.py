@@ -132,32 +132,49 @@ class SecondScreen:
             registro.anadir()
             self.tablas(self.frameMostrar, self.archivo, self.tabla_actual)
         elif option == 'Actualizar':
-            val=self.cargar_registro_seleccionado(treeview)
+            val=self.cargar_registro_seleccionado(treeview,'Actualizar')
             if val is not False:
                 registro = Registro(self.archivo, self.tabla_actual, 'Actualizar')
                 registro.cargar(val)
         elif option == "Borrar":
-            val=self.cargar_registro_seleccionado(treeview)
+            val=self.cargar_registro_seleccionado(treeview,'Borrar')
             if val is not False:
                 self.borrar(val,self.tabla_actual)
             
-    def cargar_registro_seleccionado(self, treeview):
+    def cargar_registro_seleccionado(self, treeview, opcion):
         # Función para cargar el/los registro(s) seleccionado(s) en un Toplevel
-        seleccion = treeview.selection()
+        if opcion == 'Borrar':
+            seleccion = treeview.selection()
+            if seleccion:
+                # Obtener los valores de los registros seleccionados
+                registros_seleccionados = []
+                for item in seleccion:
+                    valores_fila = treeview.item(item, 'values')
+                    registros_seleccionados.append(valores_fila)
 
-        if seleccion:
-            # Obtener los valores de los registros seleccionados
-            registros_seleccionados = []
-            for item in seleccion:
-                valores_fila = treeview.item(item, 'values')
-                registros_seleccionados.append(valores_fila)
+                # Mostrar los valores en un Toplevel o procesar la lista según tus necesidades
+                return registros_seleccionados
+            else:
+                # Mostrar un cuadro de diálogo indicando que no se ha seleccionado ningún registro
+                messagebox.showinfo("Advertencia", "Seleccione al menos un registro en el TreeView")
+                return False
+        
+        elif opcion=='Actualizar':
+            seleccion=treeview.focus()
 
-            # Mostrar los valores en un Toplevel o procesar la lista según tus necesidades
-            return registros_seleccionados
-        else:
-            # Mostrar un cuadro de diálogo indicando que no se ha seleccionado ningún registro
-            messagebox.showinfo("Advertencia", "Seleccione al menos un registro en el TreeView")
-            return False
+            if seleccion:
+                # Obtener los valores de la fila seleccionada
+                valores_fila = treeview.item(seleccion, 'values')
+            
+                # Mostrar los valores en un Toplevel
+                return valores_fila
+
+            else:
+                # Mostrar un cuadro de diálogo indicando que no se ha seleccionado ningún registro
+                messagebox.showinfo("Advertencia", "Seleccione un registro en el TreeView")
+                return False
+
+
 
 
     def load_options(self):
@@ -235,10 +252,9 @@ class SecondScreen:
 
                         return self.treeview
             except TypeError :
-                messagebox.showinfo("Alerta", f"La tabla {tabla_existe} está vacía")
+                messagebox.showinfo("Alerta", "La tabla está vacía")
             except Exception as e:
-                messagebox.showinfo("Error", f"No se pudo cargar la tabla: {str(e)}")
-
+                messagebox.showerror("Error", f"No se pudo cargar la tabla, error: {str(e)}")
 
     def borrar(self, registros, tabla_actual):
         try:
