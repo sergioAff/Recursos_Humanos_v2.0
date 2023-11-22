@@ -106,6 +106,7 @@ class Registro:
 
     def actualizar(self):
         # Obtener la clave primaria y sus índices
+        self.entries[0].config(state=DISABLED)
         primary_key_index = None
         primary_key_name = None
         for atributo in self.atributos:
@@ -116,7 +117,6 @@ class Registro:
         
         # guarda el valor de la llave primaria
         primary_key_value = self.entries[primary_key_name].get()
-
 
         # Verificar si hay cambios en los valores antes de la actualización
         nuevos_valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -142,3 +142,5 @@ class Registro:
 
             messagebox.showinfo("Éxito", "Registro actualizado exitosamente.")
             self.window.destroy()
+
+    

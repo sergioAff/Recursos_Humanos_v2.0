@@ -30,7 +30,6 @@ class SecondScreen:
 
         # Carga de las opciones para el menú desplegable
         self.load_options()
-
         # Creación de los elementos de la interfaz gráfica
         self.create_widgets()
 
@@ -60,7 +59,7 @@ class SecondScreen:
             img_boton_tablas = Image.open('Tablas.png')
             self.photoTablas = ImageTk.PhotoImage(img_boton_tablas)
 
-            img_boton_anadir = Image.open('Añadir.png')
+            img_boton_anadir = Image.open('Anadir.png')
             self.photoAnadir = ImageTk.PhotoImage(img_boton_anadir)            
 
             img_boton_actualizar = Image.open('Actualizar.png') 
@@ -107,7 +106,7 @@ class SecondScreen:
         # Creación de los botones de la interfaz gráfica
         self.create_button(self.photoAnadir, 34, 110, 160, 26, lambda: self.create_command("Añadir", tree))
         self.create_button(self.photoActualizar, 35, 183, 310, 21, lambda: self.create_command("Actualizar", tree))
-        self.create_button(self.photoBorrar, 40, 110, 540, 22, lambda: self.create_command("Borrar"))
+        self.create_button(self.photoBorrar, 40, 110, 540, 22, lambda: self.create_command("Borrar", tree))
 
     def create_button(self, image, height, width, x, y, command):
         # Función genérica para crear botones
@@ -137,25 +136,29 @@ class SecondScreen:
             if val is not False:
                 registro = Registro(self.archivo, self.tabla_actual, 'Actualizar')
                 registro.cargar(val)
-
         elif option == "Borrar":
-            registro.borrar()
-
+            val=self.cargar_registro_seleccionado(treeview)
+            if val is not False:
+                self.borrar(val,self.tabla_actual)
+            
     def cargar_registro_seleccionado(self, treeview):
-        # Función para cargar el registro seleccionado en un Toplevel
-        seleccion = treeview.focus()
+        # Función para cargar el/los registro(s) seleccionado(s) en un Toplevel
+        seleccion = treeview.selection()
 
         if seleccion:
-            # Obtener los valores de la fila seleccionada
-            valores_fila = treeview.item(seleccion, 'values')
-            
-            # Mostrar los valores en un Toplevel
-            return valores_fila
+            # Obtener los valores de los registros seleccionados
+            registros_seleccionados = []
+            for item in seleccion:
+                valores_fila = treeview.item(item, 'values')
+                registros_seleccionados.append(valores_fila)
 
+            # Mostrar los valores en un Toplevel o procesar la lista según tus necesidades
+            return registros_seleccionados
         else:
             # Mostrar un cuadro de diálogo indicando que no se ha seleccionado ningún registro
-            messagebox.showinfo("Advertencia", "Seleccione un registro en el TreeView")
+            messagebox.showinfo("Advertencia", "Seleccione al menos un registro en el TreeView")
             return False
+
 
     def load_options(self):
         # Obtención de las opciones para el menú desplegable
@@ -197,31 +200,90 @@ class SecondScreen:
         )
 
         if tabla:
-            with sql.connect(archivo) as conn:
+            try:
+                with sql.connect(archivo) as conn:
+                    cursor = conn.cursor()
+
+                    cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name=?", (tabla,))
+                    tabla_existe = cursor.fetchone()
+
+                    if tabla_existe:
+                        cursor.execute(f"PRAGMA table_info({tabla})")
+                        atributos = [column[1] for column in cursor.fetchall()]
+
+                        cursor.execute(f"SELECT * FROM {tabla}")
+                        valores = cursor.fetchall()
+
+                        # Crear o actualizar el TreeView
+                        if hasattr(self, 'treeview') and not self.treeview.winfo_exists():
+                            # Si el TreeView existe pero ya ha sido destruido, crea uno nuevo
+                            del self.treeview
+
+                        if not hasattr(self, 'treeview'):
+                            # Si no hay un TreeView existente, crea uno nuevo
+                            self.treeview = crear_treeview(frame_mostrar, atributos, valores)
+
+                            scrollbar_y = Scrollbar(frame_mostrar, orient="vertical", command=self.treeview.yview)
+                            scrollbar_y.pack(side="right", fill="y")
+                            self.treeview.configure(yscrollcommand=scrollbar_y.set)
+
+                            scrollbar_x = Scrollbar(frame_mostrar, orient=HORIZONTAL, command=self.treeview.xview)
+                            scrollbar_x.pack(side="bottom", fill="x")
+                            self.treeview.configure(xscrollcommand=scrollbar_x.set)
+
+                            self.treeview.pack(fill="both", expand=True)
+
+                        return self.treeview
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo cargar la tabla: {str(e)}")
+
+
+    def borrar(self, registros, tabla_actual):
+        try:
+            with sql.connect(self.archivo) as conn:
                 cursor = conn.cursor()
 
-                cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name=?", (tabla,))
-                tabla_existe = cursor.fetchone()
+                cursor.execute(f"PRAGMA table_info({tabla_actual})")
+                info_columnas = cursor.fetchall()
+                primary_key_column = next((column[1] for column in info_columnas if column[5] == 1), None)
 
-                if tabla_existe:
-                    cursor.execute(f"PRAGMA table_info({tabla})")
-                    atributos = [column[1] for column in cursor.fetchall()]
+                if primary_key_column:
+                    # Crear la sentencia SQL para borrar el registro
+                    sql_query = f"DELETE FROM {tabla_actual} WHERE {primary_key_column} = ?"
 
-                    cursor.execute(f"SELECT * FROM {tabla}")
-                    valores = cursor.fetchall()
+                    for registro in registros:
+                        # Ejecutar la sentencia SQL
+                        cursor.execute(sql_query, (registro[0],))  # Suponiendo que el ID es el primer valor en el registro
 
-                    tree = crear_treeview(frame_mostrar, atributos, valores)
+                    conn.commit()
 
-                    scrollbar_y = Scrollbar(frame_mostrar, orient="vertical", command=tree.yview)
-                    scrollbar_y.pack(side="right", fill="y")
-                    tree.configure(yscrollcommand=scrollbar_y.set)
+                    # Actualizar el TreeView para reflejar los cambios
+                    self.actualizar_treeview(tabla_actual)
+                    messagebox.showinfo("Éxito", "Registro eliminado correctamente.")
+                else:
+                    messagebox.showerror("Error", "No se pudo encontrar la clave primaria de la tabla.")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo borrar el registro: {str(e)}")
 
-                    scrollbar_x = Scrollbar(frame_mostrar, orient=HORIZONTAL, command=tree.xview)
-                    scrollbar_x.pack(side="bottom", fill="x")
-                    tree.configure(xscrollcommand=scrollbar_x.set)
+    def actualizar_treeview(self, tabla_actual):
+        try:
+            with sql.connect(self.archivo) as conn:
+                cursor = conn.cursor()
 
-                    tree.pack(fill="both", expand=True)
-                    
-                    return tree
+                cursor.execute(f"PRAGMA table_info({tabla_actual})")
+                atributos = [column[1] for column in cursor.fetchall()]
+
+                cursor.execute(f"SELECT * FROM {tabla_actual}")
+                valores = cursor.fetchall()
+
+                # Limpiar el TreeView
+                self.treeview.delete(*self.treeview.get_children())
+
+                # Insertar los nuevos datos
+                for valor in valores:
+                    self.treeview.insert('', 'end', values=valor)
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo actualizar el TreeView: {str(e)}")
+
 
 
