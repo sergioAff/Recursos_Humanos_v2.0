@@ -128,13 +128,13 @@ class Second_Screen:
     def create_command(self, option, treeview):
         # Función para crear el comando asociado a cada botón
         if option == 'Añadir':
-            registro = Registro(self.archivo, self.tabla_actual, 'Añadir', self.actualizar_treeview)
+            registro = Registro(self.archivo, self.tabla_actual, 'Añadir', self.actualizar_treeview   )
             registro.anadir()
 
         elif option == 'Actualizar':
             val=self.cargar_registro_seleccionado(treeview,'Actualizar')
             if val is not False:
-                registro = Registro(self.archivo, self.tabla_actual, 'Actualizar')
+                registro = Registro(self.archivo, self.tabla_actual, 'Actualizar', self.actualizar_treeview )
                 registro.cargar(val)
 
         elif option == "Borrar":

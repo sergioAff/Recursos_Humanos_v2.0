@@ -142,6 +142,6 @@ class Registro:
             self.cursor = conn.cursor()
             self.cursor.execute(update_sql, nuevos_valores + [primary_key_value])
             conn.commit()
-            
+            self.actualizar_treeview(self.tabla_actual)
             messagebox.showinfo("Éxito", "Registro actualizado exitosamente.")
             self.window.destroy()
