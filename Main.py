@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from PIL import Image, ImageTk
-from SecondScreen import SecondScreen
+from SecondScreen import Second_Screen
 
 class Screen:
     # Constantes para dimensiones de la ventana y botón
@@ -63,7 +63,7 @@ class Screen:
     def comenzar(self):
         # Cierra la ventana actual y crea la segunda pantalla
         self.root.destroy()
-        self.secondScreen = SecondScreen()
+        self.secondScreen = Second_Screen()
 
 if __name__ == "__main__":
     # Llamada a la función 'run' solo si el script es ejecutado directamente

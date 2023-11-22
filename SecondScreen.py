@@ -5,7 +5,7 @@ from tkinter import messagebox
 import sqlite3 as sql
 from registros import Registro
 
-class SecondScreen:
+class Second_Screen:
     WINDOW_WIDTH = 1000
     WINDOW_HEIGHT = 800
 
@@ -128,14 +128,15 @@ class SecondScreen:
     def create_command(self, option, treeview):
         # Función para crear el comando asociado a cada botón
         if option == 'Añadir':
-            registro = Registro(self.archivo, self.tabla_actual, 'Añadir')
+            registro = Registro(self.archivo, self.tabla_actual, 'Añadir', self.actualizar_treeview)
             registro.anadir()
-            self.tablas(self.frameMostrar, self.archivo, self.tabla_actual)
+
         elif option == 'Actualizar':
             val=self.cargar_registro_seleccionado(treeview,'Actualizar')
             if val is not False:
                 registro = Registro(self.archivo, self.tabla_actual, 'Actualizar')
                 registro.cargar(val)
+
         elif option == "Borrar":
             val=self.cargar_registro_seleccionado(treeview,'Borrar')
             if val is not False:
@@ -174,13 +175,10 @@ class SecondScreen:
                 messagebox.showinfo("Advertencia", "Seleccione un registro en el TreeView")
                 return False
 
-
-
-
     def load_options(self):
         # Obtención de las opciones para el menú desplegable
-        with sql.connect(self.archivo) as conn:
-            cursor = conn.cursor()
+        with sql.connect(self.archivo) as self.conn:
+            cursor = self.conn.cursor()
             cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table'")
             self.opciones = [fila[0] for fila in cursor.fetchall() if fila[0] != 'sqlite_sequence']
 
@@ -302,6 +300,3 @@ class SecondScreen:
                     self.treeview.insert('', 'end', values=valor)
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo actualizar el TreeView: {str(e)}")
-
-
-

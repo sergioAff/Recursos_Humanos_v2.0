@@ -2,13 +2,13 @@ from tkinter import *
 from PIL import ImageTk, Image
 import sqlite3 as sql
 from tkinter import messagebox
-
 class Registro:
 
-    def __init__(self, archivo, tabla_actual, tipo):
+    def __init__(self, archivo, tabla_actual, tipo, actualizar_treeview_callback):
         self.archivo = archivo
         self.tabla_actual = tabla_actual
         self.tipo=tipo
+        self.actualizar_treeview=actualizar_treeview_callback
 
         self.window = Toplevel()
         self.window.title(self.tipo)
@@ -90,7 +90,7 @@ class Registro:
             self.cursor = conn.cursor()
             self.cursor.execute(f"INSERT INTO {self.tabla_actual} VALUES ({', '.join(['?']*len(self.valores))})", self.valores)
             conn.commit()
-
+            self.actualizar_treeview(self.tabla_actual)
             messagebox.showinfo("Éxito", "Registro guardado exitosamente.")
             self.window.destroy()
 
@@ -142,6 +142,6 @@ class Registro:
             self.cursor = conn.cursor()
             self.cursor.execute(update_sql, nuevos_valores + [primary_key_value])
             conn.commit()
-
+            
             messagebox.showinfo("Éxito", "Registro actualizado exitosamente.")
             self.window.destroy()
