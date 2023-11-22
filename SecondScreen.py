@@ -24,7 +24,7 @@ class SecondScreen:
             # Selección del archivo de base de datos
             self.archivo ='recursosHumanos.db'
         except Exception as e:
-            messagebox.showerror('Error','Error al abir la base de datos')
+            messagebox.showerror('Error','Error al abrir la base de datos')
             self.root.destroy()
             return
 
@@ -90,25 +90,23 @@ class SecondScreen:
                 command=lambda opt=opcion: self.show_table_and_buttons(opt)
             )
         
-        self.tabla_seleccionada=opcion
-
         self.botonTablas.place(
-            height=30,
-            width=70,
-            x=25,
+            height=35,
+            width=110,
+            x=22,
             y=28,
         )
 
     def show_table_and_buttons(self, table_name):
         # Muestra la tabla seleccionada y activa los otros botones
         self.tabla_actual = table_name
-        self.tablas(self.frameMostrar, self.archivo, table_name)
-        self.create_all_buttons()
+        tree = self.tablas(self.frameMostrar, self.archivo, table_name)
+        self.create_all_buttons(tree)
 
-    def create_all_buttons(self):
+    def create_all_buttons(self, tree):
         # Creación de los botones de la interfaz gráfica
-        self.create_button(self.photoAnadir, 34, 110, 160, 26, lambda: self.create_command("Añadir"))
-        self.create_button(self.photoActualizar, 35, 183, 310, 21, lambda: self.create_command("Actualizar"))
+        self.create_button(self.photoAnadir, 34, 110, 160, 26, lambda: self.create_command("Añadir", tree))
+        self.create_button(self.photoActualizar, 35, 183, 310, 21, lambda: self.create_command("Actualizar", tree))
         self.create_button(self.photoBorrar, 40, 110, 540, 22, lambda: self.create_command("Borrar"))
 
     def create_button(self, image, height, width, x, y, command):
@@ -128,18 +126,37 @@ class SecondScreen:
             y=y
         )
 
-    def create_command(self, option):
+    def create_command(self, option, treeview):
         # Función para crear el comando asociado a cada botón
-        registro=Registro(self.archivo, self.tabla_actual)
-
-        if option == "Añadir":
+        if option == 'Añadir':
+            registro = Registro(self.archivo, self.tabla_actual, 'Añadir')
             registro.anadir()
-            self.tablas(self.frameMostrar,self.archivo, self.tabla_seleccionada)
-        elif option == "Actualizar":
-            registro.actualizar()
+            self.tablas(self.frameMostrar, self.archivo, self.tabla_actual)
+        elif option == 'Actualizar':
+            val=self.cargar_registro_seleccionado(treeview)
+            if val is not False:
+                registro = Registro(self.archivo, self.tabla_actual, 'Actualizar')
+                registro.cargar(val)
+
         elif option == "Borrar":
             registro.borrar()
-    
+
+    def cargar_registro_seleccionado(self, treeview):
+        # Función para cargar el registro seleccionado en un Toplevel
+        seleccion = treeview.focus()
+
+        if seleccion:
+            # Obtener los valores de la fila seleccionada
+            valores_fila = treeview.item(seleccion, 'values')
+            
+            # Mostrar los valores en un Toplevel
+            return valores_fila
+
+        else:
+            # Mostrar un cuadro de diálogo indicando que no se ha seleccionado ningún registro
+            messagebox.showinfo("Advertencia", "Seleccione un registro en el TreeView")
+            return False
+
     def load_options(self):
         # Obtención de las opciones para el menú desplegable
         with sql.connect(self.archivo) as conn:
@@ -147,8 +164,7 @@ class SecondScreen:
             cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table'")
             self.opciones = [fila[0] for fila in cursor.fetchall() if fila[0] != 'sqlite_sequence']
 
-    def tablas(self,frame_mostrar, archivo, tabla):
-
+    def tablas(self, frame_mostrar, archivo, tabla):
         def crear_treeview(frame, atributos, valores):
             tree = ttk.Treeview(frame, columns=atributos, show='headings', height=min(len(valores), 10))
 
@@ -205,3 +221,7 @@ class SecondScreen:
                     tree.configure(xscrollcommand=scrollbar_x.set)
 
                     tree.pack(fill="both", expand=True)
+                    
+                    return tree
+
+
