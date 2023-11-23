@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk 
-from tkinter import messagebox
+from tkinter import messagebox,simpledialog
 import sqlite3 as sql
 from registros import Registro
 import traceback
@@ -262,6 +262,15 @@ class Second_Screen:
                 messagebox.showerror("Error", f"No se pudo cargar la tabla, error: {str(e)}")
 
     def borrar(self, registros, tabla_actual):
+        while True:
+            self.respuesta=simpledialog.askinteger('Aviso','Desea eliminar el/los registro/s seleccionados?\nPulsa:\n1-Sí\n2-No')
+            if self.respuesta ==1:
+                break
+            elif self.respuesta==2:
+                return
+            else:
+                continue
+
         try:
             with sql.connect(self.archivo) as conn:
                 cursor = conn.cursor()
