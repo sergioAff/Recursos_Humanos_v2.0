@@ -131,7 +131,7 @@ class Registro:
         if nuevos_valores == list(self.datos):
             messagebox.showinfo("Información", "No hay cambios para actualizar.")
             return
-
+        
         # Construir la sentencia SQL de actualización
         update_sql = f"UPDATE {self.tabla_actual} SET "
         update_sql += ", ".join(f"{atributo[1]} = ?" for atributo in self.atributos)
