@@ -16,7 +16,6 @@ class Registro:
         self.window.resizable(0, 0)
         self.window.config(bd=10)
 
-
         # Título
         self.titulo = Label(self.window, text=f"{self.tipo} Registro {tabla_actual}", fg="black",
                        font=("Comic Sans", 13, "bold"), pady=5).pack()

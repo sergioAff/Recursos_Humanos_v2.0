@@ -17,10 +17,12 @@ class Screen:
     def setup_ui(self):
         # Configuración de la ventana principal
         self.root = Tk()
-        self.root.geometry(f'{self.WINDOW_WIDTH}x{self.WINDOW_HEIGHT}')
+        self.root.geometry(f'{self.WINDOW_WIDTH}x{self.WINDOW_HEIGHT}+{(self.root.winfo_screenwidth()-self.WINDOW_WIDTH)//2}+{(self.root.winfo_screenmmheight()-self.WINDOW_HEIGHT)//2}')
         self.root.title('Recursos Humanos')
         self.root.resizable(0, 0)
         self.root.config(bg='#082d44')
+
+        #Centrar la ventana
         try:
             self.icono = PhotoImage(file='icono.png')
             self.root.iconphoto(True, self.icono)
