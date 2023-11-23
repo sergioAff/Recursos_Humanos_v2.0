@@ -9,6 +9,7 @@ class Registro:
         self.tabla_actual = tabla_actual
         self.tipo=tipo
         self.actualizar_treeview=actualizar_treeview_callback
+        self.entries={}
 
         self.window = Toplevel()
         self.window.title(self.tipo)
@@ -46,7 +47,7 @@ class Registro:
                                  font=("Comic Sans", 10, "bold"), command=lambda: self.actualizar())
             self.boton_registrar.pack(side='left', padx=3, pady=3)        
 
-        self.boton_limpiar = Button(self.frame_botones, text="LIMPIAR", height=2, width=10, bg="gray", fg="black",
+        self.boton_limpiar = Button(self.frame_botones, text="LIMPIAR",command=self.limpiar, height=2, width=10, bg="gray", fg="black",
                                font=("Comic Sans", 10, "bold"))
         self.boton_limpiar.pack(side='left', padx=3, pady=3)
 
@@ -76,6 +77,10 @@ class Registro:
                 # Deshabilitar el Entry correspondiente a la clave primaria en la función actualizar
                 if tipo == 'Actualizar' and atributo[5] == 1:  
                     self.entry.configure(state='disabled')
+
+    def limpiar(self):
+        for entry in self.entries.values():
+            entry.delete(0,END)
 
     def anadir(self):
         # Verificar si todos los campos obligatorios están llenos
