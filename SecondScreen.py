@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 from tkinter import messagebox
 import sqlite3 as sql
 from registros import Registro
+import traceback
 
 class Second_Screen:
     WINDOW_WIDTH = 1000
@@ -23,7 +24,7 @@ class Second_Screen:
         try:
             # Selección del archivo de base de datos
             self.archivo ='recursosHumanos.db'
-        except Exception as e:
+        except Exception:
             messagebox.showerror('Error','Error al abrir la base de datos')
             self.root.destroy()
             return
@@ -129,13 +130,15 @@ class Second_Screen:
         # Función para crear el comando asociado a cada botón
         if option == 'Añadir':
             registro = Registro(self.archivo, self.tabla_actual, 'Añadir', self.actualizar_treeview   )
-            registro.anadir()
 
         elif option == 'Actualizar':
             val=self.cargar_registro_seleccionado(treeview,'Actualizar')
             if val is not False:
                 registro = Registro(self.archivo, self.tabla_actual, 'Actualizar', self.actualizar_treeview )
-                registro.cargar(val)
+                try:
+                    registro.cargar(val)
+                except:
+                    return
 
         elif option == "Borrar":
             val=self.cargar_registro_seleccionado(treeview,'Borrar')
@@ -157,12 +160,16 @@ class Second_Screen:
                 return registros_seleccionados
             else:
                 # Mostrar un cuadro de diálogo indicando que no se ha seleccionado ningún registro
-                messagebox.showinfo("Advertencia", "Seleccione al menos un registro en el TreeView")
+                messagebox.showinfo("Advertencia", "Seleccione al menos un registro")
                 return False
         
         elif opcion=='Actualizar':
-            seleccion=treeview.focus()
-
+            try:
+                seleccion=treeview.focus()
+            except AttributeError:
+                messagebox.showerror('Error','La tabla está vacía')
+                raise Exception 
+            
             if seleccion:
                 # Obtener los valores de la fila seleccionada
                 valores_fila = treeview.item(seleccion, 'values')
@@ -172,15 +179,15 @@ class Second_Screen:
 
             else:
                 # Mostrar un cuadro de diálogo indicando que no se ha seleccionado ningún registro
-                messagebox.showinfo("Advertencia", "Seleccione un registro en el TreeView")
+                messagebox.showinfo("Advertencia", "Seleccione un registro")
                 return False
 
     def load_options(self):
         # Obtención de las opciones para el menú desplegable
         with sql.connect(self.archivo) as self.conn:
-            cursor = self.conn.cursor()
-            cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table'")
-            self.opciones = [fila[0] for fila in cursor.fetchall() if fila[0] != 'sqlite_sequence']
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table'")
+            self.opciones = [fila[0] for fila in self.cursor.fetchall() if fila[0] != 'sqlite_sequence']
 
     def tablas(self, frame_mostrar, archivo, tabla):
         def crear_treeview(frame, atributos, valores):
@@ -298,5 +305,5 @@ class Second_Screen:
                 # Insertar los nuevos datos
                 for valor in valores:
                     self.treeview.insert('', 'end', values=valor)
-        except Exception as e:
-            messagebox.showerror("Error", f"No se pudo actualizar el TreeView: {str(e)}")
+        except Exception:
+            traceback.format_exc()

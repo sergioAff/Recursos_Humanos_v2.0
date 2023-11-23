@@ -14,11 +14,9 @@ class Registro:
         self.window.title(self.tipo)
         self.window.resizable(0, 0)
         self.window.config(bd=10)
-
         # Título
         self.titulo = Label(self.window, text=f"{self.tipo} Registro {tabla_actual}", fg="black",
                        font=("Comic Sans", 13, "bold"), pady=5).pack()
-
         # Logo
         self.imagen_registro = Image.open("nuevo_usuario.png")
         self.nueva_imagen = self.imagen_registro.resize((40, 40))
@@ -73,7 +71,11 @@ class Registro:
                 self.entry = Entry(self.marco, font=('Comic Sans', 15))
                 self.entry.grid(row=atributo[0], column=1, padx=5, pady=5)
 
-                self.entries[atributo[1]] = self.entry  # Almacenar la Entry en el diccionario
+                self.entries[atributo[1]] = self.entry
+                
+                # Deshabilitar el Entry correspondiente a la clave primaria en la función actualizar
+                if tipo == 'Actualizar' and atributo[5] == 1:  
+                    self.entry.configure(state='disabled')
 
     def anadir(self):
         # Verificar si todos los campos obligatorios están llenos
@@ -88,10 +90,13 @@ class Registro:
 
         with sql.connect(self.archivo) as conn:
             self.cursor = conn.cursor()
-            self.cursor.execute(f"INSERT INTO {self.tabla_actual} VALUES ({', '.join(['?']*len(self.valores))})", self.valores)
-            conn.commit()
-            self.actualizar_treeview(self.tabla_actual)
-            messagebox.showinfo("Éxito", "Registro guardado exitosamente.")
+            try:
+                self.cursor.execute(f"INSERT INTO {self.tabla_actual} VALUES ({', '.join(['?']*len(self.valores))})", self.valores)
+                conn.commit()
+                self.actualizar_treeview(self.tabla_actual)
+                messagebox.showinfo("Éxito", "Registro guardado exitosamente.")
+            except sql.IntegrityError:
+                messagebox.showerror('Error','Dato incorrecto o faltante')
             self.window.destroy()
 
 
@@ -107,6 +112,7 @@ class Registro:
                 entry_widget.delete(0, END)
                 entry_widget.insert(0, datos[i])
 
+            
     def actualizar(self):
         # Obtener la clave primaria y sus índices
         primary_key_index = None
@@ -120,16 +126,10 @@ class Registro:
         # guarda el valor de la llave primaria
         primary_key_value = self.entries[primary_key_name].get()
 
-
         # Verificar si hay cambios en los valores antes de la actualización
         nuevos_valores = [entry_widget.get() for entry_widget in self.entries.values()]
         if nuevos_valores == list(self.datos):
             messagebox.showinfo("Información", "No hay cambios para actualizar.")
-            return
-
-        if primary_key_value != self.datos[0]:
-
-            messagebox.showerror("Error", "Este atributo no puede modificarse.")
             return
 
         # Construir la sentencia SQL de actualización
