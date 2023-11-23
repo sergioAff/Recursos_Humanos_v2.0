@@ -11,10 +11,12 @@ class Registro:
         self.actualizar_treeview=actualizar_treeview_callback
         self.entries={}
 
-        self.window = Toplevel()
+        self.window = Toplevel() 
         self.window.title(self.tipo)
         self.window.resizable(0, 0)
         self.window.config(bd=10)
+
+
         # Título
         self.titulo = Label(self.window, text=f"{self.tipo} Registro {tabla_actual}", fg="black",
                        font=("Comic Sans", 13, "bold"), pady=5).pack()
@@ -76,7 +78,7 @@ class Registro:
                 
                 # Deshabilitar el Entry correspondiente a la clave primaria en la función actualizar
                 if tipo == 'Actualizar' and atributo[5] == 1:  
-                    self.entry.configure(state='disabled')
+                    self.entry.configure(state='readonly')
 
     def limpiar(self):
         for entry in self.entries.values():
@@ -114,8 +116,14 @@ class Registro:
         
             # Verifica si hay suficientes elementos en la lista datos
             if i < len(datos):
-                entry_widget.delete(0, END)
-                entry_widget.insert(0, datos[i])
+                if entry_widget.cget('state')=='readonly':
+                    entry_widget.config(state='normal')
+                    entry_widget.delete(0,END)
+                    entry_widget.insert(0,datos[i])
+                    entry_widget.config(state='readonly')
+                else:
+                    entry_widget.delete(0,END)
+                    entry_widget.insert(0,datos[i])
 
             
     def actualizar(self):
