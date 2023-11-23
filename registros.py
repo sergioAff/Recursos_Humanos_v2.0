@@ -61,8 +61,8 @@ class Registro:
             self.cursor = conn.cursor()
             self.cursor.execute(f'PRAGMA table_info({tabla_actual})')
             self.atributos = self.cursor.fetchall()
-
-            self.window.geometry(f'380x{len(self.atributos) * 40 + 200}')
+            self.altrua_ventana=len(self.atributos) * 40 + 200
+            self.window.geometry(f'380x{self.altrua_ventana}+{self.window.winfo_screenmmwidth()+800}+{self.window.winfo_screenmmheight()}')
 
             self.entries = {}  # Diccionario para almacenar las Entry widgets
 
