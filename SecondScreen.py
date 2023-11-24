@@ -10,13 +10,13 @@ class Second_Screen:
     WINDOW_WIDTH = 1000
     WINDOW_HEIGHT = 800
 
-    def __init__(self):
-        self.setup_ui()
+    def __init__(self, x, y):
+        self.setup_ui(x, y)
 
-    def setup_ui(self):
+    def setup_ui(self, x_position,y_position):
         # Configuración de la interfaz gráfica principal
         self.root = Tk()
-        self.root.geometry(f'{self.WINDOW_WIDTH}x{self.WINDOW_HEIGHT}+{(self.root.winfo_screenwidth()-self.WINDOW_WIDTH)//2}+{(self.root.winfo_screenmmheight()-self.WINDOW_HEIGHT)//2}')
+        self.root.geometry(f'{self.WINDOW_WIDTH}x{self.WINDOW_HEIGHT}+{x_position}+{y_position}')
         self.root.title('Recursos Humanos')
         self.root.resizable(0, 0)
         self.root.config(bg='#082d44') 
@@ -83,7 +83,7 @@ class Second_Screen:
 
         self.botonTablas.menu = Menu(self.botonTablas, tearoff=0)
         self.botonTablas["menu"] = self.botonTablas.menu
-
+        self.botonTablas.menu.config(font=("Helvetica", 14))
         for opcion in self.opciones:
             self.botonTablas.menu.add_command(
                 label=opcion,
@@ -229,7 +229,7 @@ class Second_Screen:
                     cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name=?", (tabla,))
                     tabla_existe = cursor.fetchone()
 
-                    if tabla_existe:
+                    if tabla_existe:                        
                         cursor.execute(f"PRAGMA table_info({tabla})")
                         atributos = [column[1] for column in cursor.fetchall()]
 
@@ -263,10 +263,11 @@ class Second_Screen:
 
     def borrar(self, registros, tabla_actual):
         while True:
-            self.respuesta=simpledialog.askinteger('Aviso','Desea eliminar el/los registro/s seleccionados?\nPulsa:\n1-Sí\n2-No')
-            if self.respuesta ==1:
+            self.respuesta=respuesta = messagebox.askquestion("Confirmar eliminación", "¿Estás seguro que deseas eliminar?")
+
+            if self.respuesta =='yes':
                 break
-            elif self.respuesta==2:
+            elif self.respuesta=='no':
                 return
             else:
                 continue

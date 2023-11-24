@@ -9,6 +9,8 @@ class Screen:
     WINDOW_HEIGHT = 800
     BUTTON_WIDTH = 290
     BUTTON_HEIGHT = 90
+    x_position=0
+    y_position=0
 
     def __init__(self):
         # Inicialización de la interfaz de usuario
@@ -17,7 +19,14 @@ class Screen:
     def setup_ui(self):
         # Configuración de la ventana principal
         self.root = Tk()
-        self.root.geometry(f'{self.WINDOW_WIDTH}x{self.WINDOW_HEIGHT}+{(self.root.winfo_screenwidth()-self.WINDOW_WIDTH)//2}+{(self.root.winfo_screenmmheight()-self.WINDOW_HEIGHT)//2}')
+
+        # Centrar la ventana en la pantalla
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x_position = (screen_width - self.WINDOW_WIDTH) // 2
+        y_position = (screen_height - self.WINDOW_HEIGHT) // 2
+
+        self.root.geometry(f'{self.WINDOW_WIDTH}x{self.WINDOW_HEIGHT}+{x_position}+{y_position-40}')
         self.root.title('Recursos Humanos')
         self.root.resizable(0, 0)
         self.root.config(bg='#082d44')
@@ -65,7 +74,7 @@ class Screen:
     def comenzar(self):
         # Cierra la ventana actual y crea la segunda pantalla
         self.root.destroy()
-        self.secondScreen = Second_Screen()
+        self.secondScreen = Second_Screen(self.x_position, self.y_position)
 
 if __name__ == "__main__":
     # Llamada a la función 'run' solo si el script es ejecutado directamente
