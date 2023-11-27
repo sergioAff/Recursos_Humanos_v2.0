@@ -70,14 +70,24 @@ class Registro:
                 self.label = Label(self.marco, text=atributo[1], font=('Comic Sans', 15))
                 self.label.grid(row=atributo[0], column=0, sticky=W, padx=5, pady=5)
 
-                self.entry = Entry(self.marco, font=('Comic Sans', 15))
-                self.entry.grid(row=atributo[0], column=1, padx=5, pady=5)
+                if atributo[1].lower()=='sexo':
+                    self.sexo_var=StringVar()
+                    self.radio_masculino=Radiobutton(self.marco, text="M", font=('Cosmic Sans',15), variable=self.sexo_var, value='M')
+                    self.radio_femenino=Radiobutton(self.marco, text='F', font=('Cosmic Sans', 15), variable=self.sexo_var, value='F')
+                    self.radio_masculino.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
+                    self.radio_femenino.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=E)
+                    self.marco.rowconfigure(atributo[0],weight=1)
+               
+                    self.entries[atributo[1]] = self.sexo_var
+                else:
+                    self.entry = Entry(self.marco, font=('Comic Sans', 15))
+                    self.entry.grid(row=atributo[0], column=1, padx=5, pady=5)
 
-                self.entries[atributo[1]] = self.entry
+                    self.entries[atributo[1]] = self.entry
                 
-                # Deshabilitar el Entry correspondiente a la clave primaria en la función actualizar
-                if tipo == 'Actualizar' and atributo[5] == 1:  
-                    self.entry.configure(state='readonly')
+                    # Deshabilitar el Entry correspondiente a la clave primaria en la función actualizar
+                    if tipo == 'Actualizar' and atributo[5] == 1:  
+                        self.entry.configure(state='readonly')
 
     def limpiar(self):
         for entry in self.entries.values():
@@ -93,6 +103,9 @@ class Registro:
 
     # Todos los campos obligatorios están llenos, guardar el registro en la base de datos
         self.valores = [entry_widget.get() for entry_widget in self.entries.values()]
+
+        if self.atributos[0][1].lower()=='sexo':
+            self.valores[0]=self.sexo_var.get()
 
         with sql.connect(self.archivo) as conn:
             self.cursor = conn.cursor()
