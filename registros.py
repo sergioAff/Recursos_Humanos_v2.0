@@ -48,7 +48,7 @@ class Registro:
                                  font=("Comic Sans", 10, "bold"), command=lambda: self.actualizar())
             self.boton_registrar.pack(side='left', padx=3, pady=3)        
 
-        self.boton_limpiar = Button(self.frame_botones, text="LIMPIAR",command=self.limpiar, height=2, width=10, bg="gray", fg="black",
+        self.boton_limpiar = Button(self.frame_botones, text="LIMPIAR",command=lambda: self.limpiar(), height=2, width=10, bg="gray", fg="black",
                                font=("Comic Sans", 10, "bold"))
         self.boton_limpiar.pack(side='left', padx=3, pady=3)
 
@@ -70,6 +70,7 @@ class Registro:
                 self.label = Label(self.marco, text=atributo[1], font=('Comic Sans', 15))
                 self.label.grid(row=atributo[0], column=0, sticky=W, padx=5, pady=5)
 
+                
                 if atributo[1].lower()=='sexo':
                     self.sexo_var=StringVar()
                     self.radio_masculino=Radiobutton(self.marco, text="M", font=('Cosmic Sans',15), variable=self.sexo_var, value='M')
@@ -79,6 +80,27 @@ class Registro:
                     self.marco.rowconfigure(atributo[0],weight=1)
                
                     self.entries[atributo[1]] = self.sexo_var
+
+                elif atributo[1].lower()=='tipoplaza':
+                    self.tipo_plaza=StringVar()
+                    self.opciones=('Plaza fija', 'Sin plaza')
+                    self.spin_plaza=Spinbox(self.marco, values=self.opciones, textvariable=self.tipo_plaza, font=('Cosmic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
+                    self.spin_plaza.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
+                    self.entries[atributo[1]]=self.spin_plaza                
+                elif atributo[1].lower()=='cantidad':
+                    self.cantidad=Spinbox(self.marco, from_=0, to=1000, width= 10, font=('Comic Sans', 15))
+                    self.cantidad.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
+
+                    self.entries[atributo[1]]=self.cantidad
+
+                elif atributo[1].lower()=='rangoedad':
+                    self.rango_edad=StringVar()
+                    self.opciones=('Menores de 30','De 30 a 50', 'De 51 a 60', 'Mayores de 60')
+                    self.spin_edades=Spinbox(self.marco, values=self.opciones,textvariable=self.rango_edad, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
+                    self.spin_edades.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
+
+                    self.entries[atributo[1]]=self.spin_edades
+                
                 else:
                     self.entry = Entry(self.marco, font=('Comic Sans', 15))
                     self.entry.grid(row=atributo[0], column=1, padx=5, pady=5)
@@ -97,9 +119,13 @@ class Registro:
         # Verificar si todos los campos obligatorios están llenos
         for atributo in self.atributos:
             entry_widget = self.entries[atributo[1]]
+
             if atributo[2] == 1 and entry_widget.get() == "":
                 messagebox.showerror("Error", f"El campo '{atributo[1]}' no puede estar vacío.")
                 return
+        if self.tabla_actual =='Demanda':
+            self.cantidad_validacion()
+        
 
     # Todos los campos obligatorios están llenos, guardar el registro en la base de datos
         self.valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -125,6 +151,7 @@ class Registro:
         # Carga las Entry widgets con los nuevos datos
         for i, atributo in enumerate(self.atributos):
             entry_widget = self.entries[atributo[1]]
+
         
             # Verifica si hay suficientes elementos en la lista datos
             if i < len(datos):
@@ -139,6 +166,7 @@ class Registro:
 
             
     def actualizar(self):
+
         # Obtener la clave primaria y sus índices
         primary_key_index = None
         primary_key_name = None
@@ -150,6 +178,9 @@ class Registro:
         
         # guarda el valor de la llave primaria
         primary_key_value = self.entries[primary_key_name].get()
+
+        if self.tabla_actual =='Demanda':
+            self.cantidad_validacion()
 
         # Verificar si hay cambios en los valores antes de la actualización
         nuevos_valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -170,3 +201,25 @@ class Registro:
             self.actualizar_treeview(self.tabla_actual)
             messagebox.showinfo("Éxito", "Registro actualizado exitosamente.")
             self.window.destroy()
+
+
+# Validar que self.cantidad sea un entero
+    def cantidad_validacion(self):
+        try:
+            cantidad = int(self.cantidad.get())
+        except ValueError:
+            messagebox.showerror("Error", "La cantidad debe ser un número entero.")
+            raise ValueError
+            
+        # Validar que self.cantidad esté entre 0 y 1000
+        if not (0 <= cantidad <= 1000):
+            messagebox.showerror("Error", "La cantidad debe estar entre 0 y 1000.")
+            raise ValueError
+        
+
+    def validar(self, nuevo_valor):
+        if nuevo_valor in self.opciones:
+            return True
+        else:
+            messagebox.showerror('Aviso','Desplazate ente las opciones con las flechas')
+            return False
