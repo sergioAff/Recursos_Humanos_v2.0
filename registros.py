@@ -212,11 +212,18 @@ class Registro:
                     else:
                         entry_widget.delete(0, END)
                         entry_widget.insert(0, datos[i])
+                else:
+                    self.cargar_especifico(atributo, datos[i])
 
+    def cargar_especifico(self, atributo, valor):
+        if atributo[1].lower() == 'rangoedad':
+            self.rango_edad.set(valor)
+        elif atributo[1].lower() == 'tipoplaza':
+            self.tipo_plaza.set(valor)
+        elif atributo[1].lower() == 'sexo':
+            self.sexo_var.set(valor)
 
-            
     def actualizar(self):
-
         # Obtener la clave primaria y sus índices
         primary_key_index = None
         primary_key_name = None
