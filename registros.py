@@ -56,7 +56,6 @@ class Registro:
                                 fg="black", font=("Comic Sans", 10, "bold"))
         self.boton_cancelar.pack(side='left', padx=3, pady=3)
         
-
         with sql.connect(self.archivo) as conn:
             self.cursor = conn.cursor()
             self.cursor.execute(f'PRAGMA table_info({tabla_actual})')
@@ -70,7 +69,6 @@ class Registro:
                 self.label = Label(self.marco, text=atributo[1], font=('Comic Sans', 15))
                 self.label.grid(row=atributo[0], column=0, sticky=W, padx=5, pady=5)
 
-                
                 if atributo[1].lower()=='sexo':
                     self.sexo_var=StringVar()
                     self.radio_masculino=Radiobutton(self.marco, text="M", font=('Cosmic Sans',15), variable=self.sexo_var, value='M')
@@ -113,8 +111,9 @@ class Registro:
 
     def limpiar(self):
         for entry in self.entries.values():
-            entry.delete(0,END)
-
+            if type(entry) == Entry:
+                entry.delete(0,END)
+ 
     def anadir(self):
         # Verificar si todos los campos obligatorios están llenos
         for atributo in self.atributos:
@@ -126,7 +125,6 @@ class Registro:
         if self.tabla_actual =='Demanda':
             self.cantidad_validacion()
         
-
     # Todos los campos obligatorios están llenos, guardar el registro en la base de datos
         self.valores = [entry_widget.get() for entry_widget in self.entries.values()]
 
@@ -144,7 +142,6 @@ class Registro:
                 messagebox.showerror('Error','Dato incorrecto o faltante')
             self.window.destroy()
 
-
     def cargar(self, datos):
         self.datos = datos
 
@@ -152,17 +149,18 @@ class Registro:
         for i, atributo in enumerate(self.atributos):
             entry_widget = self.entries[atributo[1]]
 
-        
             # Verifica si hay suficientes elementos en la lista datos
             if i < len(datos):
-                if entry_widget.cget('state')=='readonly':
-                    entry_widget.config(state='normal')
-                    entry_widget.delete(0,END)
-                    entry_widget.insert(0,datos[i])
-                    entry_widget.config(state='readonly')
-                else:
-                    entry_widget.delete(0,END)
-                    entry_widget.insert(0,datos[i])
+                if isinstance(entry_widget, Entry):
+                    if entry_widget.cget('state') == 'readonly':
+                        entry_widget.config(state='normal')
+                        entry_widget.delete(0, END)
+                        entry_widget.insert(0, datos[i])
+                        entry_widget.config(state='readonly')
+                    else:
+                        entry_widget.delete(0, END)
+                        entry_widget.insert(0, datos[i])
+
 
             
     def actualizar(self):
@@ -202,7 +200,6 @@ class Registro:
             messagebox.showinfo("Éxito", "Registro actualizado exitosamente.")
             self.window.destroy()
 
-
 # Validar que self.cantidad sea un entero
     def cantidad_validacion(self):
         try:
@@ -216,7 +213,6 @@ class Registro:
             messagebox.showerror("Error", "La cantidad debe estar entre 0 y 1000.")
             raise ValueError
         
-
     def validar(self, nuevo_valor):
         if nuevo_valor in self.opciones:
             return True
