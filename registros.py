@@ -2,6 +2,7 @@ from tkinter import *
 from PIL import ImageTk, Image
 import sqlite3 as sql
 from tkinter import messagebox
+import re
 class Registro:
 
     def __init__(self, archivo, tabla_actual, tipo, actualizar_treeview_callback):
@@ -79,16 +80,22 @@ class Registro:
                
                     self.entries[atributo[1]] = self.sexo_var
 
+                elif atributo[1].lower() == 'gmail':
+                    self.correo = StringVar()
+                    self.entry_correo = Entry(self.marco, textvariable=self.correo, font=('Comic Sans', 15))
+                    self.entry_correo.grid(row=atributo[0], column=1, padx=5, pady=5)
+                    self.entries[atributo[1]] = self.entry_correo
+
                 elif atributo[1].lower()=='tipoplaza':
                     self.tipo_plaza=StringVar()
-                    self.opciones=('Plaza fija', 'Sin plaza')
+                    self.opciones=('Plaza fija','Adiestr. laboral con plaza fija','Adiestr. laboral sin plaza fija','Rva. científica con plaza fija','Rva. científica sin plaza fija','Disponibles', 'Sin plaza')
                     self.spin_plaza=Spinbox(self.marco, values=self.opciones, textvariable=self.tipo_plaza, font=('Cosmic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
                     self.spin_plaza.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
                     self.entries[atributo[1]]=self.spin_plaza                
+                
                 elif atributo[1].lower()=='cantidad':
                     self.cantidad=Spinbox(self.marco, from_=0, to=1000, width= 10, font=('Comic Sans', 15))
                     self.cantidad.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
-
                     self.entries[atributo[1]]=self.cantidad
 
                 elif atributo[1].lower()=='rangoedad':
@@ -96,9 +103,22 @@ class Registro:
                     self.opciones=('Menores de 30','De 30 a 50', 'De 51 a 60', 'Mayores de 60')
                     self.spin_edades=Spinbox(self.marco, values=self.opciones,textvariable=self.rango_edad, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
                     self.spin_edades.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
-
                     self.entries[atributo[1]]=self.spin_edades
-                
+
+                elif atributo[1].lower()=='nivelensenanza':
+                    self.nivel=StringVar()
+                    self.opciones=('Nivel Superior','Técnico medio','Obrero calificado')
+                    self.spin_niveles=Spinbox(self.marco, values=self.opciones,textvariable=self.nivel, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P') )
+                    self.spin_niveles.grid(row=atributo[0], column=1, padx=5,pady=5, sticky=W)
+                    self.entries[atributo[1]]=self.spin_niveles
+
+                elif atributo[1].lower()=='causa':
+                    self.casuas=StringVar()
+                    self.opciones=('Jubilación','Personale')
+                    self.sepin_causas=Spinbox(self.marco, values=self.opciones, textvariable=self.casuas, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
+                    self.sepin_causas.grid(row=atributo[0], column=1, padx=5,pady=5, sticky=W)
+                    self.entries[atributo[1]]=self.sepin_causas
+                  
                 else:
                     self.entry = Entry(self.marco, font=('Comic Sans', 15))
                     self.entry.grid(row=atributo[0], column=1, padx=5, pady=5)
@@ -122,8 +142,12 @@ class Registro:
             if atributo[2] == 1 and entry_widget.get() == "":
                 messagebox.showerror("Error", f"El campo '{atributo[1]}' no puede estar vacío.")
                 return
+        
         if self.tabla_actual =='Demanda':
             self.cantidad_validacion()
+
+        if self.tabla_actual=='Trabajador':
+            self.validar_correo()
         
     # Todos los campos obligatorios están llenos, guardar el registro en la base de datos
         self.valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -179,6 +203,9 @@ class Registro:
 
         if self.tabla_actual =='Demanda':
             self.cantidad_validacion()
+        
+        if self.tabla_actual=='Trabajador':
+            self.validar_correo()
 
         # Verificar si hay cambios en los valores antes de la actualización
         nuevos_valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -213,9 +240,18 @@ class Registro:
             messagebox.showerror("Error", "La cantidad debe estar entre 0 y 1000.")
             raise ValueError
         
+    def validar_correo(self):
+        correo = self.entry_correo.get()
+        # Utilizar una expresión regular para validar el formato del correo
+        patron_correo = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        if not patron_correo.match(correo):
+            messagebox.showerror("Error", "Formato de correo electrónico no válido.")
+            raise ValueError
+        
     def validar(self, nuevo_valor):
         if nuevo_valor in self.opciones:
             return True
         else:
             messagebox.showerror('Aviso','Desplazate ente las opciones con las flechas')
             return False
+        
