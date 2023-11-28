@@ -3,6 +3,7 @@ from PIL import ImageTk, Image
 import sqlite3 as sql
 from tkinter import messagebox
 import re
+from tkinter import ttk
 class Registro:
 
     def __init__(self, archivo, tabla_actual, tipo, actualizar_treeview_callback):

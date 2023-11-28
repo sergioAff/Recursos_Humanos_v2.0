@@ -3,8 +3,10 @@ from tkinter import ttk
 from PIL import Image, ImageTk 
 from tkinter import messagebox,simpledialog
 import sqlite3 as sql
-from registros import Registro
 import traceback
+from registros import Registro
+from especialidad import Especialidad
+
 
 class Second_Screen:
     WINDOW_WIDTH = 1000
@@ -19,7 +21,9 @@ class Second_Screen:
         self.root.geometry(f'{self.WINDOW_WIDTH}x{self.WINDOW_HEIGHT}+{x_position}+{y_position}')
         self.root.title('Recursos Humanos')
         self.root.resizable(0, 0)
-        self.root.config(bg='#082d44') 
+        self.root.config(bg='#082d44')
+
+        self.botonEspecialidad=Button() 
 
         try:
             # Selección del archivo de base de datos
@@ -68,6 +72,9 @@ class Second_Screen:
 
             img_boton_borrar = Image.open('Borrar.png')
             self.photoBorrar = ImageTk.PhotoImage(img_boton_borrar)
+
+            img_boton_especialidad=Image.open('Especialidad.png')
+            self.photoEspecialidad=ImageTk.PhotoImage(img_boton_especialidad)
 
         except Exception as e:
             messagebox.showerror('Error', 'Falta algún archivo')
@@ -144,7 +151,12 @@ class Second_Screen:
             val=self.cargar_registro_seleccionado(treeview,'Borrar')
             if val is not False:
                 self.borrar(val,self.tabla_actual)
-            
+
+        elif option=='Especialidad':
+            val=self.cargar_registro_seleccionado(treeview,'Especialidad')
+            if val is not False:
+                especialidad=Especialidad(self.archivo,self.actualizar_treeview,val)
+    
     def cargar_registro_seleccionado(self, treeview, opcion):
         # Función para cargar el/los registro(s) seleccionado(s) en un Toplevel
         if opcion == 'Borrar':
@@ -163,7 +175,7 @@ class Second_Screen:
                 messagebox.showinfo("Advertencia", "Seleccione al menos un registro")
                 return False
         
-        elif opcion=='Actualizar':
+        elif opcion=='Actualizar' or opcion=='Especialidad':
             try:
                 seleccion=treeview.focus()
             except AttributeError:
@@ -197,6 +209,14 @@ class Second_Screen:
             style.configure("Treeview", font=('Arial', 14), rowheight=45)
             style.configure("Treeview.Heading", font=('Arial', 14, 'bold'))
             style.configure("Treeview.Treeview", background="#E1E1E1", fieldbackground="#E1E1E1", foreground="black")
+
+            if tabla.lower() == 'carrera':
+                self.botonEspecialidad.config(image=self.photoEspecialidad,cursor='hand2',command= lambda:self.create_command('Especialidad',tree))
+                self.botonEspecialidad.place(height=31,width=205,x=690,y=29)
+            else:
+                self.botonEspecialidad.destroy()
+                self.botonEspecialidad=Button() 
+
 
             for atributo in atributos:
                 tree.heading(atributo, text=atributo)
@@ -260,6 +280,7 @@ class Second_Screen:
                 messagebox.showinfo("Alerta", "La tabla está vacía")
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo cargar la tabla, error: {str(e)}")
+                traceback.print_exc()
 
     def borrar(self, registros, tabla_actual):
         while True:
@@ -317,3 +338,5 @@ class Second_Screen:
                     self.treeview.insert('', 'end', values=valor)
         except Exception:
             traceback.format_exc()
+
+    
