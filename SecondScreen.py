@@ -155,7 +155,7 @@ class Second_Screen:
         elif option=='Especialidad':
             val=self.cargar_registro_seleccionado(treeview,'Especialidad')
             if val is not False:
-                especialidad=Especialidad(self.archivo,self.actualizar_treeview,val)
+                especialidad=Especialidad(self.tabla_actual,self.archivo,self.actualizar_treeview,val)
     
     def cargar_registro_seleccionado(self, treeview, opcion):
         # Función para cargar el/los registro(s) seleccionado(s) en un Toplevel

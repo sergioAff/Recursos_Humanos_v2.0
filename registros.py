@@ -68,6 +68,29 @@ class Registro:
             self.entries = {}  # Diccionario para almacenar las Entry widgets
 
             for atributo in self.atributos:
+                if atributo[1]=='codigoProvincia':
+                    self.label = Label(self.marco, text=atributo[1], font=('Comic Sans', 15))
+                    self.label.grid(row=atributo[0], column=0, sticky=W, padx=5, pady=5)
+
+                    # Crear una variable controladora para el combobox
+                    codigo_provincia_var = StringVar()
+
+                    # Consultar los valores del campo nombre de la tabla provincia
+                    with sql.connect(self.archivo) as conn:
+                        cursor = conn.cursor()
+                        cursor.execute("SELECT nombre FROM provincia")
+                        nombres_provincias = [nombre[0] for nombre in cursor.fetchall()]
+
+                    # Crear el combobox con los valores obtenidos
+                    combobox = ttk.Combobox(self.marco, values=nombres_provincias, textvariable=codigo_provincia_var, width=30, height=10)
+                    combobox.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
+
+                    # Al tocar el combobox, actualizar la variable controladora con el código correspondiente
+                    combobox.bind("<<ComboboxSelected>>", lambda event, var=codigo_provincia_var: self.actualizar_codigo_provincia_var(var))
+
+                    self.entries[atributo[1]] = combobox  # Almacenar el combobox en el diccionario de entries
+                    break
+
                 self.label = Label(self.marco, text=atributo[1], font=('Comic Sans', 15))
                 self.label.grid(row=atributo[0], column=0, sticky=W, padx=5, pady=5)
 
@@ -130,6 +153,7 @@ class Registro:
                     if tipo == 'Actualizar' and atributo[5] == 1:  
                         self.entry.configure(state='readonly')
 
+                        
     def limpiar(self):
         for entry in self.entries.values():
             if type(entry) == Entry:
@@ -147,8 +171,11 @@ class Registro:
         if self.tabla_actual =='Demanda':
             self.cantidad_validacion()
 
-        if self.tabla_actual=='Trabajador':
+        elif self.tabla_actual=='Trabajador':
             self.validar_correo()
+
+        elif self.tabla_actual=='Especialidad':
+            self.validar_especialidad() 
         
     # Todos los campos obligatorios están llenos, guardar el registro en la base de datos
         self.valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -205,8 +232,11 @@ class Registro:
         if self.tabla_actual =='Demanda':
             self.cantidad_validacion()
         
-        if self.tabla_actual=='Trabajador':
+        elif self.tabla_actual=='Trabajador':
             self.validar_correo()
+
+        elif self.tabla_actual=='Especialidad':
+            self.validar_especialidad() 
 
         # Verificar si hay cambios en los valores antes de la actualización
         nuevos_valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -253,6 +283,28 @@ class Registro:
         if nuevo_valor in self.opciones:
             return True
         else:
-            messagebox.showerror('Aviso','Desplazate ente las opciones con las flechas')
             return False
         
+    def validar_especialidad(self):
+        nombre_especialidad = self.entries['nombre'].get()
+
+        with sql.connect(self.archivo) as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) FROM Especialidad WHERE nombre=?', (nombre_especialidad,))
+            count = cursor.fetchone()[0]
+
+            if count > 0:
+                messagebox.showerror('Error', f"La especialidad '{nombre_especialidad}' ya existe. Ingrese un nombre único.")
+                raise ValueError
+            
+    def actualizar_codigo_provincia_var(self, var):
+        nombre_provincia_seleccionada = var.get()
+
+        # Consultar el código de la provincia seleccionada
+        with sql.connect(self.archivo) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT codigo FROM provincia WHERE nombre = ?", (nombre_provincia_seleccionada,))
+            codigo_provincia = cursor.fetchone()[0]
+
+        # Actualizar la variable controladora con el código correspondiente
+        var.set(codigo_provincia)

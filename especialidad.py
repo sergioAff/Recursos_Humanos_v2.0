@@ -5,10 +5,12 @@ from tkinter import messagebox
 
 class Especialidad:
 
-    def __init__(self, archivo, actualizar_treeview_callback, registro) :
+    def __init__(self,tabla_actual, archivo, actualizar_treeview_callback, registro) :
         self.archivo=archivo
         self.actualizar_treeview = actualizar_treeview_callback
         self.registro=registro
+        self.tabla_actual=tabla_actual
+        self.codigo_carrera=registro[0]
 
         self.window_especialidades=Toplevel()
         self.window_especialidades.title("Especialidades")
@@ -31,24 +33,42 @@ class Especialidad:
         self.frame_botones = Frame(self.window_especialidades)
         self.frame_botones.pack(side='bottom')
 
-        self.boton_eliminar = Button(self.frame_botones, text="ELIMINAR", height=2, width=10, bg="blue", fg="black",
-                                font=("Comic Sans", 10, "bold"), command=lambda: self.eliminar())
-        self.boton_eliminar.pack(side='left', padx=3, pady=3)
+        self.boton_salir=Button(self.frame_botones, text='SALIR', command=lambda:self.window_especialidades.destroy(), height=2, width=10, bg='red',fg='black', font=('Comic Sans',10,'bold'))
+        self.boton_salir.pack(side='left',padx=3,pady=3)
 
-        self.boton_limpiar = Button(self.frame_botones, text="LIMPIAR",command=lambda: self.limpiar(), height=2, width=10, bg="gray", fg="black",
-                               font=("Comic Sans", 10, "bold"))
-        self.boton_limpiar.pack(side='left', padx=3, pady=3)
+        with sql.connect(self.archivo) as conn:
+            self.cursor=conn.cursor()
+            self.cursor.execute('SELECT nombre FROM Especialidad WHERE codigoCarrera=?', (self.codigo_carrera,))
+            self.resultados=self.cursor.fetchall()
+            
+            self.fila=0
 
-        self.boton_cancelar=Button(self.frame_botones, text='CERRAR', command=lambda:self.window_especialidades.destroy(), height=2, width=10, bg='red',fg='black', font=('Comic Sans',10,'bold'))
-        self.boton_cancelar.pack(side='left',padx=3,pady=3)
+            for especialidad in self.resultados:
+                self.label=Label(self.marco, text=especialidad[0], font=('Cosmic Sans', 15))
+                self.label.grid(row=self.fila, column=0, sticky=W,padx=5, pady=5)
 
+                self.boton_eliminar = Button(self.marco, text='X', command=lambda esp=especialidad[0]: self.confirmar_eliminar(esp))
+                self.boton_eliminar.grid(row=self.fila, column=1, padx=5, pady=5)
 
+                self.fila+=1
 
+    def confirmar_eliminar(self, especialidad):
+        respuesta = messagebox.askokcancel("Confirmar", f"¿Eliminar la especialidad '{especialidad}'?")
+        if respuesta:
+            # Eliminar la especialidad de la base de datos y actualizar la GUI
+            self.eliminar_especialidad(especialidad)
 
-    def limpiar(self):
-        for entry in self.entries.values():
-            if type(entry) == Entry:
-                entry.delete(0,END)
+    def eliminar_especialidad(self, especialidad):
 
-    def eliminar(self):
-        pass
+        with sql.connect(self.archivo) as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM Especialidad WHERE codigoCarrera=? AND nombre=?', (self.codigo_carrera, especialidad))
+            conn.commit()
+        
+        self.actualizar_treeview(self.tabla_actual)
+        self.actualizar_toplevel()
+
+    def actualizar_toplevel(self):
+
+        self.window_especialidades.destroy()
+        self.__init__(self.tabla_actual, self.archivo, self.actualizar_treeview, self.registro)
