@@ -114,7 +114,7 @@ class Registro:
 
                 elif atributo[1].lower()=='causa':
                     self.casuas=StringVar()
-                    self.opciones=('Jubilación','Personale')
+                    self.opciones=('Jubilación','Personal')
                     self.sepin_causas=Spinbox(self.marco, values=self.opciones, textvariable=self.casuas, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
                     self.sepin_causas.grid(row=atributo[0], column=1, padx=5,pady=5, sticky=W)
                     self.entries[atributo[1]]=self.sepin_causas
