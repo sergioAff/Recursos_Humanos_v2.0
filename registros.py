@@ -213,9 +213,9 @@ class Registro:
                         entry_widget.delete(0, END)
                         entry_widget.insert(0, datos[i])
                 else:
-                    self.cargar_especifico(atributo, datos[i])
+                    self.cargar_demas_valores(atributo, datos[i])
 
-    def cargar_especifico(self, atributo, valor):
+    def cargar_demas_valores(self, atributo, valor):
         if atributo[1].lower() == 'rangoedad':
             self.rango_edad.set(valor)
         elif atributo[1].lower() == 'tipoplaza':
@@ -290,10 +290,14 @@ class Registro:
         if nuevo_valor in self.opciones:
             return True
         else:
+            pass
             return False
         
     def validar_especialidad(self):
         nombre_especialidad = self.entries['nombre'].get()
+        
+        if self.tipo == 'Actualizar' and nombre_especialidad ==self.datos[1]:
+            return
 
         with sql.connect(self.archivo) as conn:
             cursor = conn.cursor()
