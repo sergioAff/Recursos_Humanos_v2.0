@@ -43,14 +43,19 @@ class Especialidad:
             
             self.fila=0
 
-            for especialidad in self.resultados:
-                self.label=Label(self.marco, text=especialidad[0], font=('Cosmic Sans', 15))
-                self.label.grid(row=self.fila, column=0, sticky=W,padx=5, pady=5)
+            if self.resultados==[]:
+                self.label=Label(self.marco, text=f'No hay especialidades para {self.registro[1]}', font=('Cosmic Sans', 15))
+                self.label.grid(row=self.fila, column=0, sticky=W, padx=5, pady=5)
+            
+            else:
+                for especialidad in self.resultados:
+                    self.label=Label(self.marco, text=especialidad[0], font=('Cosmic Sans', 15))
+                    self.label.grid(row=self.fila, column=0, sticky=W,padx=5, pady=5)
 
-                self.boton_eliminar = Button(self.marco, text='X', command=lambda esp=especialidad[0]: self.confirmar_eliminar(esp))
-                self.boton_eliminar.grid(row=self.fila, column=1, padx=5, pady=5)
+                    self.boton_eliminar = Button(self.marco, text='X', command=lambda esp=especialidad[0]: self.confirmar_eliminar(esp))
+                    self.boton_eliminar.grid(row=self.fila, column=1, padx=5, pady=5)
 
-                self.fila+=1
+                    self.fila+=1
 
     def confirmar_eliminar(self, especialidad):
         respuesta = messagebox.askokcancel("Confirmar", f"¿Eliminar la especialidad '{especialidad}'?")

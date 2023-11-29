@@ -170,12 +170,28 @@ class Registro:
         
         if self.tabla_actual =='Demanda':
             self.cantidad_validacion()
+            self.validar_demanda() 
 
         elif self.tabla_actual=='Trabajador':
             self.validar_correo()
 
         elif self.tabla_actual=='Especialidad':
-            self.validar_especialidad() 
+            self.validar_especialidad()
+
+        elif self.tabla_actual=='Municipio':
+            self.validar_municipio()
+
+        elif self.tabla_actual=='Provincia':
+            self.validar_provincia()
+
+        elif self.tabla_actual=='Entidad':
+            self.validar_entidad()
+
+        elif self.tabla_actual=='Organismo':
+            self.validar_organismo()
+
+        elif self.tabla_actual=='Carrera':
+            self.validar_carrera()
         
     # Todos los campos obligatorios están llenos, guardar el registro en la base de datos
         self.valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -238,12 +254,28 @@ class Registro:
 
         if self.tabla_actual =='Demanda':
             self.cantidad_validacion()
+            self.validar_demanda() 
         
         elif self.tabla_actual=='Trabajador':
             self.validar_correo()
 
         elif self.tabla_actual=='Especialidad':
             self.validar_especialidad() 
+
+        elif self.tabla_actual=='Municipio':
+            self.validar_municipio()
+
+        elif self.tabla_actual=='Provincia':
+            self.validar_provincia()
+
+        elif self.tabla_actual=='Entidad':
+            self.validar_entidad()
+
+        elif self.tabla_actual=='Organismo':
+            self.validar_organismo()
+
+        elif self.tabla_actual=='Carrera':
+            self.validar_carrera()
 
         # Verificar si hay cambios en los valores antes de la actualización
         nuevos_valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -308,6 +340,95 @@ class Registro:
                 messagebox.showerror('Error', f"La especialidad '{nombre_especialidad}' ya existe. Ingrese un nombre único.")
                 raise ValueError
             
+    def validar_demanda(self):
+        demanda = self.entries['nombreCarrera'].get()
+
+        if self.tipo == 'Actualizar' and demanda ==self.datos[1]:
+            return
+
+        with sql.connect(self.archivo) as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) FROM Demanda WHERE nombreCarrera=?', (demanda,))
+            count = cursor.fetchone()[0]
+
+            if count > 0:
+                messagebox.showerror('Error', f"{demanda} ya existe. Ingrese un nombre único.")
+                raise ValueError
+            
+    def validar_municipio(self):
+        municipio = self.entries['nombre'].get()
+
+        if self.tipo == 'Actualizar' and municipio ==self.datos[1]:
+            return
+
+        with sql.connect(self.archivo) as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) FROM Municipio WHERE nombre=?', (municipio,))
+            count = cursor.fetchone()[0]
+
+            if count > 0:
+                messagebox.showerror('Error', f"{municipio} ya existe. Ingrese un nombre único.")
+                raise ValueError
+    
+    def validar_provincia(self):
+        provincia = self.entries['nombre'].get()
+
+        if self.tipo == 'Actualizar' and provincia ==self.datos[1]:
+            return
+
+        with sql.connect(self.archivo) as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) FROM Provincia WHERE nombre=?', (provincia,))
+            count = cursor.fetchone()[0]
+
+            if count > 0:
+                messagebox.showerror('Error', f"{provincia} ya existe. Ingrese un nombre único.")
+                raise ValueError
+    
+    def validar_entidad(self):
+        entidad = self.entries['nombre'].get()
+
+        if self.tipo == 'Actualizar' and entidad ==self.datos[1]:
+            return
+
+        with sql.connect(self.archivo) as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) FROM Entidad WHERE nombre=?', (entidad,))
+            count = cursor.fetchone()[0]
+
+            if count > 0:
+                messagebox.showerror('Error', f"{entidad} ya existe. Ingrese un nombre único.")
+                raise ValueError
+            
+    def validar_organismo(self):
+        organismo = self.entries['nombre'].get()
+
+        if self.tipo == 'Actualizar' and organismo ==self.datos[1]:
+            return
+
+        with sql.connect(self.archivo) as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) FROM Organismo WHERE nombre=?', (organismo,))
+            count = cursor.fetchone()[0]
+
+            if count > 0:
+                messagebox.showerror('Error', f"{organismo} ya existe. Ingrese un nombre único.")
+                raise ValueError
+
+    def validar_carrera(self):
+        carrera = self.entries['nombre'].get()
+
+        if self.tipo == 'Actualizar' and carrera ==self.datos[1]:
+            return
+
+        with sql.connect(self.archivo) as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) FROM Carrera WHERE nombre=?', (carrera,))
+            count = cursor.fetchone()[0]
+
+            if count > 0:
+                messagebox.showerror('Error', f"{carrera} ya existe. Ingrese un nombre único.")
+                raise ValueError
     def actualizar_codigo_provincia_var(self, var):
         nombre_provincia_seleccionada = var.get()
 
