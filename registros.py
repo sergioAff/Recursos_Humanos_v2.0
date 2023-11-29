@@ -65,20 +65,29 @@ class Registro:
             self.altrua_ventana=len(self.atributos) * 40 + 200
             self.window.geometry(f'500x{self.altrua_ventana}+{self.window.winfo_screenmmwidth()+600}+{0}')
 
+            # Consulta PRAGMA foreign_key_list
+            self.cursor.execute(f'PRAGMA foreign_key_list({tabla_actual})')
+            foraneas = {foranea[3]:(foranea[2],foranea[3],foranea[4]) for foranea in self.cursor.fetchall()}
+
             self.entries = {}  # Diccionario para almacenar las Entry widgets
+            self.identificadores_combobox = {}
 
             for atributo in self.atributos:
-                if atributo[1]=='codigoProvincia':
+                if atributo[1] in foraneas:
                     self.label = Label(self.marco, text=atributo[1], font=('Comic Sans', 15))
                     self.label.grid(row=atributo[0], column=0, sticky=W, padx=5, pady=5)
 
                     # Crear una variable controladora para el combobox
                     codigo_provincia_var = StringVar()
 
+                    # Asignar un identificador único al ComboBox
+                    identificador_combobox = f"{self.tabla_actual}_{atributo[1]}"
+                    self.identificadores_combobox[identificador_combobox] = codigo_provincia_var
+
                     # Consultar los valores del campo nombre de la tabla provincia
                     with sql.connect(self.archivo) as conn:
                         cursor = conn.cursor()
-                        cursor.execute("SELECT nombre FROM provincia")
+                        cursor.execute(f"SELECT nombre FROM {foraneas[atributo[1]][0]}")
                         nombres_provincias = [nombre[0] for nombre in cursor.fetchall()]
 
                     # Crear el combobox con los valores obtenidos
@@ -86,68 +95,68 @@ class Registro:
                     combobox.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
 
                     # Al tocar el combobox, actualizar la variable controladora con el código correspondiente
-                    combobox.bind("<<ComboboxSelected>>", lambda event, var=codigo_provincia_var: self.actualizar_codigo_provincia_var(var))
+                    combobox.bind("<<ComboboxSelected>>", lambda event, identificador=identificador_combobox: self.actualizar_codigo_provincia_var(identificador))
 
                     self.entries[atributo[1]] = combobox  # Almacenar el combobox en el diccionario de entries
-                    break
-
-                self.label = Label(self.marco, text=atributo[1], font=('Comic Sans', 15))
-                self.label.grid(row=atributo[0], column=0, sticky=W, padx=5, pady=5)
-
-                if atributo[1].lower()=='sexo':
-                    self.sexo_var=StringVar()
-                    self.radio_masculino=Radiobutton(self.marco, text="M", font=('Cosmic Sans',15), variable=self.sexo_var, value='M')
-                    self.radio_femenino=Radiobutton(self.marco, text='F', font=('Cosmic Sans', 15), variable=self.sexo_var, value='F')
-                    self.radio_masculino.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
-                    self.radio_femenino.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=E)
-                    self.marco.rowconfigure(atributo[0],weight=1)
-               
-                    self.entries[atributo[1]] = self.sexo_var
-
-                elif atributo[1].lower() == 'gmail':
-                    self.correo = StringVar()
-                    self.entry_correo = Entry(self.marco, textvariable=self.correo, font=('Comic Sans', 15))
-                    self.entry_correo.grid(row=atributo[0], column=1, padx=5, pady=5)
-                    self.entries[atributo[1]] = self.entry_correo
-
-                elif atributo[1].lower()=='tipoplaza':
-                    self.tipo_plaza=StringVar()
-                    self.opciones=('Plaza fija','Adiestr. laboral con plaza fija','Adiestr. laboral sin plaza fija','Rva. científica con plaza fija','Rva. científica sin plaza fija','Disponibles', 'Sin plaza')
-                    self.spin_plaza=Spinbox(self.marco, values=self.opciones, textvariable=self.tipo_plaza, font=('Cosmic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
-                    self.spin_plaza.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
-                    self.entries[atributo[1]]=self.spin_plaza                
-                
-                elif atributo[1].lower()=='cantidad':
-                    self.cantidad=Spinbox(self.marco, from_=0, to=1000, width= 10, font=('Comic Sans', 15))
-                    self.cantidad.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
-                    self.entries[atributo[1]]=self.cantidad
-
-                elif atributo[1].lower()=='rangoedad':
-                    self.rango_edad=StringVar()
-                    self.opciones=('Menores de 30','De 30 a 50', 'De 51 a 60', 'Mayores de 60')
-                    self.spin_edades=Spinbox(self.marco, values=self.opciones,textvariable=self.rango_edad, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
-                    self.spin_edades.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
-                    self.entries[atributo[1]]=self.spin_edades
-
-                elif atributo[1].lower()=='nivelensenanza':
-                    self.nivel=StringVar()
-                    self.opciones=('Nivel Superior','Técnico medio','Obrero calificado')
-                    self.spin_niveles=Spinbox(self.marco, values=self.opciones,textvariable=self.nivel, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P') )
-                    self.spin_niveles.grid(row=atributo[0], column=1, padx=5,pady=5, sticky=W)
-                    self.entries[atributo[1]]=self.spin_niveles
-
-                elif atributo[1].lower()=='causa':
-                    self.casuas=StringVar()
-                    self.opciones=('Jubilación','Personal')
-                    self.sepin_causas=Spinbox(self.marco, values=self.opciones, textvariable=self.casuas, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
-                    self.sepin_causas.grid(row=atributo[0], column=1, padx=5,pady=5, sticky=W)
-                    self.entries[atributo[1]]=self.sepin_causas
-                  
                 else:
-                    self.entry = Entry(self.marco, font=('Comic Sans', 15))
-                    self.entry.grid(row=atributo[0], column=1, padx=5, pady=5)
 
-                    self.entries[atributo[1]] = self.entry
+                    self.label = Label(self.marco, text=atributo[1], font=('Comic Sans', 15))
+                    self.label.grid(row=atributo[0], column=0, sticky=W, padx=5, pady=5)
+
+                    if atributo[1].lower()=='sexo':
+                        self.sexo_var=StringVar()
+                        self.radio_masculino=Radiobutton(self.marco, text="M", font=('Cosmic Sans',15), variable=self.sexo_var, value='M')
+                        self.radio_femenino=Radiobutton(self.marco, text='F', font=('Cosmic Sans', 15), variable=self.sexo_var, value='F')
+                        self.radio_masculino.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
+                        self.radio_femenino.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=E)
+                        self.marco.rowconfigure(atributo[0],weight=1)
+               
+                        self.entries[atributo[1]] = self.sexo_var
+
+                    elif atributo[1].lower() == 'gmail':
+                        self.correo = StringVar()
+                        self.entry_correo = Entry(self.marco, textvariable=self.correo, font=('Comic Sans', 15))
+                        self.entry_correo.grid(row=atributo[0], column=1, padx=5, pady=5)
+                        self.entries[atributo[1]] = self.entry_correo
+
+                    elif atributo[1].lower()=='tipoplaza':
+                        self.tipo_plaza=StringVar()
+                        self.opciones=('Plaza fija','Adiestr. laboral con plaza fija','Adiestr. laboral sin plaza fija','Rva. científica con plaza fija','Rva. científica sin plaza fija','Disponibles', 'Sin plaza')
+                        self.spin_plaza=Spinbox(self.marco, values=self.opciones, textvariable=self.tipo_plaza, font=('Cosmic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
+                        self.spin_plaza.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
+                        self.entries[atributo[1]]=self.spin_plaza                
+                
+                    elif atributo[1].lower()=='cantidad':
+                        self.cantidad=Spinbox(self.marco, from_=0, to=1000, width= 10, font=('Comic Sans', 15))
+                        self.cantidad.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
+                        self.entries[atributo[1]]=self.cantidad
+
+                    elif atributo[1].lower()=='rangoedad':
+                        self.rango_edad=StringVar()
+                        self.opciones=('Menores de 30','De 30 a 50', 'De 51 a 60', 'Mayores de 60')
+                        self.spin_edades=Spinbox(self.marco, values=self.opciones,textvariable=self.rango_edad, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
+                        self.spin_edades.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
+                        self.entries[atributo[1]]=self.spin_edades
+
+                    elif atributo[1].lower()=='nivelensenanza':
+                        self.nivel=StringVar()
+                        self.opciones=('Nivel Superior','Técnico medio','Obrero calificado')
+                        self.spin_niveles=Spinbox(self.marco, values=self.opciones,textvariable=self.nivel, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P') )
+                        self.spin_niveles.grid(row=atributo[0], column=1, padx=5,pady=5, sticky=W)
+                        self.entries[atributo[1]]=self.spin_niveles
+
+                    elif atributo[1].lower()=='causa':
+                        self.casuas=StringVar()
+                        self.opciones=('Jubilación','Personal')
+                        self.sepin_causas=Spinbox(self.marco, values=self.opciones, textvariable=self.casuas, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
+                        self.sepin_causas.grid(row=atributo[0], column=1, padx=5,pady=5, sticky=W)
+                        self.entries[atributo[1]]=self.sepin_causas
+                  
+                    else:
+                        self.entry = Entry(self.marco, font=('Comic Sans', 15))
+                        self.entry.grid(row=atributo[0], column=1, padx=5, pady=5)
+
+                        self.entries[atributo[1]] = self.entry
                 
                     # Deshabilitar el Entry correspondiente a la clave primaria en la función actualizar
                     if tipo == 'Actualizar' and atributo[5] == 1:  
@@ -429,14 +438,20 @@ class Registro:
             if count > 0:
                 messagebox.showerror('Error', f"{carrera} ya existe. Ingrese un nombre único.")
                 raise ValueError
-    def actualizar_codigo_provincia_var(self, var):
-        nombre_provincia_seleccionada = var.get()
-
+    def actualizar_codigo_provincia_var(self, identificador):
+        nombre_provincia_seleccionada = self.identificadores_combobox[identificador].get()
+        _, atributo = identificador.split('_')
+        
         # Consultar el código de la provincia seleccionada
         with sql.connect(self.archivo) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT codigo FROM provincia WHERE nombre = ?", (nombre_provincia_seleccionada,))
+
+            cursor.execute(f'PRAGMA foreign_key_list({self.tabla_actual})')
+            foraneas = {foranea[3]:(foranea[2],foranea[3],foranea[4]) for foranea in cursor.fetchall()}
+
+            cursor.execute(f"SELECT {foraneas[atributo][2]} FROM {foraneas[atributo][0]} WHERE nombre = ?", (nombre_provincia_seleccionada,))
             codigo_provincia = cursor.fetchone()[0]
+            
 
         # Actualizar la variable controladora con el código correspondiente
-        var.set(codigo_provincia)
+            self.entries[atributo].set(codigo_provincia)

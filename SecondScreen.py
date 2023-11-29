@@ -1,12 +1,11 @@
 from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk 
-from tkinter import messagebox,simpledialog
+from tkinter import messagebox
 import sqlite3 as sql
 import traceback
 from registros import Registro
 from especialidad import Especialidad
-
 
 class Second_Screen:
     WINDOW_WIDTH = 1000
