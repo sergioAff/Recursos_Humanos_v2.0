@@ -67,13 +67,13 @@ class Registro:
 
             # Consulta PRAGMA foreign_key_list
             self.cursor.execute(f'PRAGMA foreign_key_list({tabla_actual})')
-            foraneas = {foranea[3]:(foranea[2],foranea[3],foranea[4]) for foranea in self.cursor.fetchall()}
+            self.foraneas = {foranea[3]:(foranea[2],foranea[3],foranea[4]) for foranea in self.cursor.fetchall()}
 
             self.entries = {}  # Diccionario para almacenar las Entry widgets
             self.identificadores_combobox = {}
 
             for atributo in self.atributos:
-                if atributo[1] in foraneas:
+                if atributo[1] in self.foraneas:
                     self.label = Label(self.marco, text=atributo[1], font=('Comic Sans', 15))
                     self.label.grid(row=atributo[0], column=0, sticky=W, padx=5, pady=5)
 
@@ -87,7 +87,7 @@ class Registro:
                     # Consultar los valores del campo nombre de la tabla provincia
                     with sql.connect(self.archivo) as conn:
                         cursor = conn.cursor()
-                        cursor.execute(f"SELECT nombre FROM {foraneas[atributo[1]][0]}")
+                        cursor.execute(f"SELECT nombre FROM {self.foraneas[atributo[1]][0]}")
                         nombres_provincias = [nombre[0] for nombre in cursor.fetchall()]
 
                     # Crear el combobox con los valores obtenidos
@@ -216,7 +216,7 @@ class Registro:
                 self.actualizar_treeview(self.tabla_actual)
                 messagebox.showinfo("Éxito", "Registro guardado exitosamente.")
             except sql.IntegrityError:
-                messagebox.showerror('Error','Dato incorrecto o faltante')
+                messagebox.showerror('Error','ID incorrecto o faltante')
             self.window.destroy()
 
     def cargar(self, datos):
@@ -452,6 +452,5 @@ class Registro:
             cursor.execute(f"SELECT {foraneas[atributo][2]} FROM {foraneas[atributo][0]} WHERE nombre = ?", (nombre_provincia_seleccionada,))
             codigo_provincia = cursor.fetchone()[0]
             
-
         # Actualizar la variable controladora con el código correspondiente
             self.entries[atributo].set(codigo_provincia)

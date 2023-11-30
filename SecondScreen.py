@@ -22,7 +22,8 @@ class Second_Screen:
         self.root.resizable(0, 0)
         self.root.config(bg='#082d44')
 
-        self.botonEspecialidad=Button() 
+        self.botonEspecialidad=Button()
+        self.botonFiltrar=Button() 
 
         try:
             # Selección del archivo de base de datos
@@ -36,7 +37,6 @@ class Second_Screen:
         self.load_options()
         # Creación de los elementos de la interfaz gráfica
         self.create_widgets()
-
         # Bucle principal de la interfaz gráfica
         self.root.mainloop()
 
@@ -74,6 +74,9 @@ class Second_Screen:
 
             img_boton_especialidad=Image.open('Especialidad.png')
             self.photoEspecialidad=ImageTk.PhotoImage(img_boton_especialidad)
+
+            img_boton_filtrar=Image.open('Filtrar.png')
+            self.photoFiltrar=ImageTk.PhotoImage(img_boton_filtrar)
 
         except Exception as e:
             messagebox.showerror('Error', 'Falta algún archivo')
@@ -155,7 +158,7 @@ class Second_Screen:
             val=self.cargar_registro_seleccionado(treeview,'Especialidad')
             if val is not False:
                 especialidad=Especialidad(self.tabla_actual,self.archivo,self.actualizar_treeview,val)
-    
+
     def cargar_registro_seleccionado(self, treeview, opcion):
         # Función para cargar el/los registro(s) seleccionado(s) en un Toplevel
         if opcion == 'Borrar':
@@ -215,6 +218,49 @@ class Second_Screen:
             else:
                 self.botonEspecialidad.destroy()
                 self.botonEspecialidad=Button() 
+
+            if tabla.lower() == 'trabajador':
+                self.botonFiltrar=Menubutton(image=self.photoFiltrar, cursor='hand2', borderwidth=0, highlightthickness=0)
+
+                self.botonFiltrar.menu = Menu(self.botonFiltrar, tearoff=0)
+                self.botonFiltrar["menu"] = self.botonFiltrar.menu
+                self.botonFiltrar.menu.config(font=("Helvetica", 14))
+
+                with sql.connect(self.archivo) as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT DISTINCT rangoEdad FROM trabajador")
+                    opciones_rango = [str(row[0]) for row in cursor.fetchall()]
+
+                for option in opciones_rango:
+                    self.botonFiltrar.menu.add_command(
+                        label=option,
+                        command=lambda opt=option: filtrar_por_rango(opt)              
+                    )
+                
+                self.botonFiltrar.place(height=31, width=100, x=690, y=29)
+
+                def filtrar_por_rango(rango_seleccionado):
+
+                    # Obtener los registros que cumplen con el rango de edad seleccionado
+                    try:
+                        with sql.connect(self.archivo) as conn:
+                            cursor = conn.cursor()
+                            cursor.execute(f"SELECT * FROM trabajador WHERE rangoEdad = ?", (rango_seleccionado,))
+                            valores = cursor.fetchall()
+
+                            # Limpiar el TreeView
+                            self.treeview.delete(*self.treeview.get_children())
+
+                            # Insertar los nuevos datos
+                            for valor in valores:
+                                self.treeview.insert('', 'end', values=valor)
+
+                    except Exception as e:
+                        messagebox.showerror("Error", f"No se pudieron filtrar los registros: {str(e)}")
+
+            else:
+                self.botonFiltrar.destroy()
+                self.botonFiltrar=Button()
 
 
             for atributo in atributos:
