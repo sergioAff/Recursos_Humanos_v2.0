@@ -17,6 +17,19 @@ class Especialidad:
         self.window_especialidades.resizable(0,0)
         self.window_especialidades.config(bd=10)
 
+        # Obtener la posición actual de la ventana principal
+        x_pos, y_pos = self.window_especialidades.winfo_x(), self.window_especialidades.winfo_y()
+
+        # Obtener el ancho de la pantalla
+        screen_width = self.window_especialidades.winfo_screenwidth()
+
+        # Calcular la nueva posición para la ventana de especialidades
+        nueva_x_pos = screen_width - self.window_especialidades.winfo_reqwidth() - 300  # Puedes ajustar el valor 10 según tus necesidades
+        nueva_y_pos = y_pos + 250  # Ajusta este valor según tus necesidades
+
+        # Establecer la geometría de la nueva ventana
+        self.window_especialidades.geometry(f'+{nueva_x_pos}+{nueva_y_pos}')
+
         self.titulo_especialidades = Label(self.window_especialidades, text=f'Modificar las especialidades de {self.registro[1]}', fg='black', font=('Comic Sans', 13, 'bold'), pady=5).pack()
 
         self.imagen_registro = Image.open("nuevo_usuario.png")

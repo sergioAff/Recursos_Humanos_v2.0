@@ -230,6 +230,7 @@ class Second_Screen:
                     cursor = conn.cursor()
                     cursor.execute("SELECT DISTINCT rangoEdad FROM trabajador")
                     opciones_rango = [str(row[0]) for row in cursor.fetchall()]
+                    opciones_rango.append('Todos')
 
                 for option in opciones_rango:
                     self.botonFiltrar.menu.add_command(
@@ -243,17 +244,21 @@ class Second_Screen:
 
                     # Obtener los registros que cumplen con el rango de edad seleccionado
                     try:
-                        with sql.connect(self.archivo) as conn:
-                            cursor = conn.cursor()
-                            cursor.execute(f"SELECT * FROM trabajador WHERE rangoEdad = ?", (rango_seleccionado,))
-                            valores = cursor.fetchall()
+                        if rango_seleccionado=='Todos':
+                            self.actualizar_treeview(self.tabla_actual)
 
-                            # Limpiar el TreeView
-                            self.treeview.delete(*self.treeview.get_children())
+                        else:
+                            with sql.connect(self.archivo) as conn:
+                                cursor = conn.cursor()
+                                cursor.execute(f"SELECT * FROM trabajador WHERE rangoEdad = ?", (rango_seleccionado,))
+                                valores = cursor.fetchall()
 
-                            # Insertar los nuevos datos
-                            for valor in valores:
-                                self.treeview.insert('', 'end', values=valor)
+                                # Limpiar el TreeView
+                                self.treeview.delete(*self.treeview.get_children())
+
+                                # Insertar los nuevos datos
+                                for valor in valores:
+                                    self.treeview.insert('', 'end', values=valor)
 
                     except Exception as e:
                         messagebox.showerror("Error", f"No se pudieron filtrar los registros: {str(e)}")

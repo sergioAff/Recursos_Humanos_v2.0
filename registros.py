@@ -121,8 +121,9 @@ class Registro:
 
                     elif atributo[1].lower()=='tipoplaza':
                         self.tipo_plaza=StringVar()
-                        self.opciones=('Plaza fija','Adiestr. laboral con plaza fija','Adiestr. laboral sin plaza fija','Rva. científica con plaza fija','Rva. científica sin plaza fija','Disponibles', 'Sin plaza')
-                        self.spin_plaza=Spinbox(self.marco, values=self.opciones, textvariable=self.tipo_plaza, font=('Cosmic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
+                        self.opciones=('','Plaza fija','Adiestr. laboral con plaza fija','Adiestr. laboral sin plaza fija','Rva. científica con plaza fija','Rva. científica sin plaza fija','Disponibles', 'Sin plaza')
+                        self.spin_plaza=Spinbox(self.marco, values=self.opciones, textvariable=self.tipo_plaza, font=('Cosmic Sans',15))
+                        self.spin_plaza.config(state='readonly')
                         self.spin_plaza.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
                         self.entries[atributo[1]]=self.spin_plaza                
                 
@@ -133,22 +134,25 @@ class Registro:
 
                     elif atributo[1].lower()=='rangoedad':
                         self.rango_edad=StringVar()
-                        self.opciones=('Menores de 30','De 30 a 50', 'De 51 a 60', 'Mayores de 60')
-                        self.spin_edades=Spinbox(self.marco, values=self.opciones,textvariable=self.rango_edad, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
+                        self.opciones=('','Menores de 30','De 30 a 50', 'De 51 a 60', 'Mayores de 60')
+                        self.spin_edades=Spinbox(self.marco, values=self.opciones,textvariable=self.rango_edad, font=('Comic Sans',15))
+                        self.spin_edades.config(state='readonly')
                         self.spin_edades.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
                         self.entries[atributo[1]]=self.spin_edades
 
                     elif atributo[1].lower()=='nivelensenanza':
                         self.nivel=StringVar()
-                        self.opciones=('Nivel Superior','Técnico medio','Obrero calificado')
-                        self.spin_niveles=Spinbox(self.marco, values=self.opciones,textvariable=self.nivel, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P') )
+                        self.opciones=('','Nivel Superior','Técnico medio','Obrero calificado')
+                        self.spin_niveles=Spinbox(self.marco, values=self.opciones,textvariable=self.nivel, font=('Comic Sans',15))
+                        self.spin_niveles.config(state='readonly')
                         self.spin_niveles.grid(row=atributo[0], column=1, padx=5,pady=5, sticky=W)
                         self.entries[atributo[1]]=self.spin_niveles
 
                     elif atributo[1].lower()=='causa':
                         self.casuas=StringVar()
-                        self.opciones=('Jubilación','Personal')
-                        self.sepin_causas=Spinbox(self.marco, values=self.opciones, textvariable=self.casuas, font=('Comic Sans',15), validate='all', validatecommand=(self.window.register(self.validar),'%P'))
+                        self.opciones=('','Jubilación','Personal')
+                        self.sepin_causas=Spinbox(self.marco, values=self.opciones, textvariable=self.casuas, font=('Comic Sans',15))
+                        self.sepin_causas.config(state='readonly')
                         self.sepin_causas.grid(row=atributo[0], column=1, padx=5,pady=5, sticky=W)
                         self.entries[atributo[1]]=self.sepin_causas
                   
@@ -161,13 +165,15 @@ class Registro:
                     # Deshabilitar el Entry correspondiente a la clave primaria en la función actualizar
                     if tipo == 'Actualizar' and atributo[5] == 1:  
                         self.entry.configure(state='readonly')
-
-                        
+  
     def limpiar(self):
         for entry in self.entries.values():
-            if type(entry) == Entry:
-                entry.delete(0,END)
- 
+            if isinstance(entry, Entry):
+                entry.delete(0, END)
+            elif isinstance(entry, StringVar):
+                entry.set('')
+
+
     def anadir(self):
         # Verificar si todos los campos obligatorios están llenos
         for atributo in self.atributos:
@@ -326,14 +332,7 @@ class Registro:
         if not patron_correo.match(correo):
             messagebox.showerror("Error", "Formato de correo electrónico no válido.")
             raise ValueError
-        
-    def validar(self, nuevo_valor):
-        if nuevo_valor in self.opciones:
-            return True
-        else:
-            pass
-            return False
-        
+                
     def validar_especialidad(self):
         nombre_especialidad = self.entries['nombre'].get()
         
