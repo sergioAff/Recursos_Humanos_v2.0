@@ -172,6 +172,11 @@ class Registro:
                 entry.delete(0, END)
             elif isinstance(entry, StringVar):
                 entry.set('')
+            elif isinstance(entry,Spinbox):
+               if entry.cget('state') == 'readonly':
+                    entry.config(state='normal')
+                    entry.delete(0,END)
+                    entry.config(state='readonly')
 
 
     def anadir(self):
@@ -234,7 +239,7 @@ class Registro:
 
             # Verifica si hay suficientes elementos en la lista datos
             if i < len(datos):
-                if isinstance(entry_widget, Entry):
+                if isinstance(entry_widget, Entry) or isinstance(entry_widget,Spinbox) :
                     if entry_widget.cget('state') == 'readonly':
                         entry_widget.config(state='normal')
                         entry_widget.delete(0, END)
