@@ -173,11 +173,14 @@ class Registro:
             elif isinstance(entry, StringVar):
                 entry.set('')
             elif isinstance(entry,Spinbox):
-               if entry.cget('state') == 'readonly':
+                if entry.cget('state') == 'readonly':
                     entry.config(state='normal')
                     entry.delete(0,END)
                     entry.config(state='readonly')
-
+                else:
+                   entry.delete(0,END)
+                   entry.insert(0,0)
+                   
 
     def anadir(self):
         # Verificar si todos los campos obligatorios están llenos
