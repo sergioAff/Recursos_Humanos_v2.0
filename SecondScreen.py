@@ -220,6 +220,9 @@ class Second_Screen:
                 self.botonEspecialidad=Button() 
 
             if tabla.lower() == 'trabajador':
+                if self.botonFiltrar:
+                    self.botonFiltrar.destroy()
+                    self.botonFiltrar=Button()
                 self.botonFiltrar=Menubutton(image=self.photoFiltrar, cursor='hand2', borderwidth=0, highlightthickness=0)
 
                 self.botonFiltrar.menu = Menu(self.botonFiltrar, tearoff=0)
@@ -264,9 +267,8 @@ class Second_Screen:
                         messagebox.showerror("Error", f"No se pudieron filtrar los registros: {str(e)}")
 
             else:
-                self.botonFiltrar.destroy()
-                self.botonFiltrar=Button()
-
+                if self.botonFiltrar:
+                    self.botonFiltrar.destroy()
 
             for atributo in atributos:
                 tree.heading(atributo, text=atributo)

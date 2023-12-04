@@ -113,7 +113,7 @@ class Registro:
                
                         self.entries[atributo[1]] = self.sexo_var
 
-                    elif atributo[1].lower() == 'gmail':
+                    elif atributo[1].lower() == 'correo':
                         self.correo = StringVar()
                         self.entry_correo = Entry(self.marco, textvariable=self.correo, font=('Comic Sans', 15))
                         self.entry_correo.grid(row=atributo[0], column=1, padx=5, pady=5)
@@ -181,7 +181,6 @@ class Registro:
                    entry.delete(0,END)
                    entry.insert(0,0)
                    
-
     def anadir(self):
         # Verificar si todos los campos obligatorios están llenos
         for atributo in self.atributos:
@@ -215,6 +214,9 @@ class Registro:
 
         elif self.tabla_actual=='Carrera':
             self.validar_carrera()
+
+        elif self.tabla_actual=='Trabajador':
+            self.validar_correo()
         
     # Todos los campos obligatorios están llenos, guardar el registro en la base de datos
         self.valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -280,7 +282,7 @@ class Registro:
             self.validar_demanda() 
         
         elif self.tabla_actual=='Trabajador':
-            self.validar_correo()
+            self.validar_correo_existente()
 
         elif self.tabla_actual=='Especialidad':
             self.validar_especialidad() 
@@ -299,6 +301,9 @@ class Registro:
 
         elif self.tabla_actual=='Carrera':
             self.validar_carrera()
+
+        elif self.tabla_actual=='Trabajador':
+            self.validar_correo()
 
         # Verificar si hay cambios en los valores antes de la actualización
         nuevos_valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -335,6 +340,7 @@ class Registro:
         
     def validar_correo(self):
         correo = self.entry_correo.get()
+
         # Utilizar una expresión regular para validar el formato del correo
         patron_correo = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
         if not patron_correo.match(correo):
@@ -416,6 +422,21 @@ class Registro:
                 messagebox.showerror('Error', f"{entidad} ya existe. Ingrese un nombre único.")
                 raise ValueError
             
+    def validar_correo_existente(self):
+        correo=self.entries['correo'].get()
+        print(self.datos)
+        if self.tipo=='Actualizar' and correo==self.datos[3]:
+            return
+        
+        with sql.connect(self.archivo)as conn:
+            cursor=conn.cursor()
+            cursor.execute('SELECT COUNT(*) FROM Trabajador WHERE correo=?',(correo,))
+            count =cursor.fetchall()[0]
+
+            if count[0] > 0:
+                messagebox.showerror('Error', f"{correo} ya existe. Ingrese un nombre único.")
+                raise ValueError
+                        
     def validar_organismo(self):
         organismo = self.entries['nombre'].get()
 
@@ -445,6 +466,7 @@ class Registro:
             if count > 0:
                 messagebox.showerror('Error', f"{carrera} ya existe. Ingrese un nombre único.")
                 raise ValueError
+    
     def actualizar_codigo_provincia_var(self, identificador):
         nombre_provincia_seleccionada = self.identificadores_combobox[identificador].get()
         _, atributo = identificador.split('_')
@@ -461,3 +483,5 @@ class Registro:
             
         # Actualizar la variable controladora con el código correspondiente
             self.entries[atributo].set(codigo_provincia)
+
+    
