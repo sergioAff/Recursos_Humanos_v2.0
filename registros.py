@@ -4,6 +4,7 @@ import sqlite3 as sql
 from tkinter import messagebox
 import re
 from tkinter import ttk
+from datetime import datetime
 class Registro:
 
     def __init__(self, archivo, tabla_actual, tipo, actualizar_treeview_callback):
@@ -467,6 +468,40 @@ class Registro:
                 messagebox.showerror('Error', f"{carrera} ya existe. Ingrese un nombre único.")
                 raise ValueError
     
+    def obtener_edad_y_sexo(self):
+        year=datetime.now().year
+
+        carnet=self.entries['id'].get
+
+        if len(carnet)!=11 or not carnet.isdigit() :
+            messagebox.showerror('Error','Carnet incorrecto')
+            return
+        
+        dia_nacimiento = int(carnet[4:6])
+        mes_nacimiento = int(carnet[2:4])
+        
+        # Ajustar para manejar el escenario de un solo dígito para el año con cero adelante
+        ano_nacimiento_str = carnet[0:2]
+        ano_nacimiento = int(ano_nacimiento_str) + (1900 if ano_nacimiento_str.startswith('0') else 2000)
+
+        # Calcular la edad
+        edad = year - ano_nacimiento
+
+        # Validar si ya ha cumplido años en este año
+        if mes_nacimiento > datetime.now().month or (mes_nacimiento == datetime.now().month and dia_nacimiento > datetime.now().day):
+            edad -= 1
+
+        # Calcular el valor para el campo rangoEdad
+        if edad < 30:
+            rango_edad_valor = self.opciones[1]
+        elif 30 <= edad <= 50:
+            rango_edad_valor = self.opciones[2]
+        elif 51 <= edad <= 60:
+            rango_edad_valor = self.opciones[3]
+        else:
+            rango_edad_valor = self.opciones[4]
+        
+            
     def actualizar_codigo_provincia_var(self, identificador):
         nombre_provincia_seleccionada = self.identificadores_combobox[identificador].get()
         _, atributo = identificador.split('_')
