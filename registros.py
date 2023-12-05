@@ -79,26 +79,32 @@ class Registro:
                     self.label.grid(row=atributo[0], column=0, sticky=W, padx=5, pady=5)
 
                     # Crear una variable controladora para el combobox
-                    codigo_provincia_var = StringVar()
+                    codigo_var = StringVar()
 
                     # Asignar un identificador único al ComboBox
                     identificador_combobox = f"{self.tabla_actual}_{atributo[1]}"
-                    self.identificadores_combobox[identificador_combobox] = codigo_provincia_var
+                    self.identificadores_combobox[identificador_combobox] = codigo_var
 
                     # Consultar los valores del campo nombre de la tabla provincia
                     with sql.connect(self.archivo) as conn:
                         cursor = conn.cursor()
                         cursor.execute(f"SELECT nombre FROM {self.foraneas[atributo[1]][0]}")
-                        nombres_provincias = [nombre[0] for nombre in cursor.fetchall()]
+                        nombres_tablas = [nombre[0] for nombre in cursor.fetchall()]
 
                     # Crear el combobox con los valores obtenidos
-                    combobox = ttk.Combobox(self.marco, values=nombres_provincias, textvariable=codigo_provincia_var, width=30, height=10)
+                    combobox = ttk.Combobox(self.marco, values=nombres_tablas, textvariable=codigo_var, width=30, height=10)
                     combobox.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
 
                     # Al tocar el combobox, actualizar la variable controladora con el código correspondiente
-                    combobox.bind("<<ComboboxSelected>>", lambda event, identificador=identificador_combobox: self.actualizar_codigo_provincia_var(identificador))
+                    combobox.bind("<<ComboboxSelected>>", lambda event, identificador=identificador_combobox: self.actualizar_codigo_var(identificador))
+                    
+                    combobox['state']='readonly'
 
                     self.entries[atributo[1]] = combobox  # Almacenar el combobox en el diccionario de entries
+
+                    if atributo[1]=='codigoMunicipio':
+                        combobox['state']='disable'
+
                 else:
 
                     self.label = Label(self.marco, text=atributo[1], font=('Comic Sans', 15))
@@ -169,7 +175,10 @@ class Registro:
   
     def limpiar(self):
         for entry in self.entries.values():
-            if isinstance(entry, Entry):
+            print(entry)
+            if isinstance(entry, ttk.Combobox):
+                entry.set('')  
+            elif isinstance(entry, Entry):
                 entry.delete(0, END)
             elif isinstance(entry, StringVar):
                 entry.set('')
@@ -181,6 +190,8 @@ class Registro:
                 else:
                    entry.delete(0,END)
                    entry.insert(0,0)
+        self.entries["codigoMunicipio"].configure(state='disable')
+            
                    
     def anadir(self):
         # Verificar si todos los campos obligatorios están llenos
@@ -500,23 +511,45 @@ class Registro:
             rango_edad_valor = self.opciones[3]
         else:
             rango_edad_valor = self.opciones[4]
+
+        if rango_edad_valor != self.entries["rangoEdad"].get():
+            messagebox.showerror('Error','el rango de edad no coincide con el carnet')
+            return
         
             
-    def actualizar_codigo_provincia_var(self, identificador):
-        nombre_provincia_seleccionada = self.identificadores_combobox[identificador].get()
+    def actualizar_codigo_var(self, identificador):
+        nombre_seleccionado = self.identificadores_combobox[identificador].get()
         _, atributo = identificador.split('_')
-        
-        # Consultar el código de la provincia seleccionada
+
+        # Consultar el código del dato seleccionado
         with sql.connect(self.archivo) as conn:
             cursor = conn.cursor()
 
-            cursor.execute(f'PRAGMA foreign_key_list({self.tabla_actual})')
-            foraneas = {foranea[3]:(foranea[2],foranea[3],foranea[4]) for foranea in cursor.fetchall()}
+            cursor.execute(f"SELECT {self.foraneas[atributo][2]} FROM {self.foraneas[atributo][0]} WHERE nombre = ?", (nombre_seleccionado,))
+            codigo_tabla = cursor.fetchone()[0]
 
-            cursor.execute(f"SELECT {foraneas[atributo][2]} FROM {foraneas[atributo][0]} WHERE nombre = ?", (nombre_provincia_seleccionada,))
-            codigo_provincia = cursor.fetchone()[0]
-            
         # Actualizar la variable controladora con el código correspondiente
-            self.entries[atributo].set(codigo_provincia)
+        self.entries[atributo].set(codigo_tabla)
+
+        # Actualizar los valores del ComboBox correspondiente a f"{self.tabla_actual}_codigoMunicipio"
+        if atributo == "codigoProvincia" and self.tabla_actual != 'Municipio':
+            municipio_combobox = self.entries["codigoMunicipio"]
+
+            # Obtener el código de provincia seleccionado
+            codigo_provincia = self.entries["codigoProvincia"].get()
+
+            #Modificar el estado y el valor del municipio si fue cambiado el de la provincia
+            if codigo_provincia != '':
+                municipio_combobox.set('')
+                municipio_combobox.configure(state='readonly')
+
+            # Consultar los nombres de municipios que corresponden a la provincia seleccionada
+            cursor.execute(f"SELECT nombre FROM Municipio WHERE codigoProvincia = ?", (codigo_provincia,))
+            nombres_municipios = [nombre[0] for nombre in cursor.fetchall()]
+
+            # Actualizar los valores del ComboBox de municipios
+            municipio_combobox["values"] = nombres_municipios
+
+            municipio_combobox.configure(state='readonly')
 
     
