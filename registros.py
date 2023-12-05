@@ -247,6 +247,7 @@ class Registro:
                 messagebox.showinfo("Éxito", "Registro guardado exitosamente.")
             except sql.IntegrityError:
                 messagebox.showerror('Error','El ID ya existe')
+                raise Exception
             self.window.destroy()
 
     def cargar(self, datos):
@@ -579,15 +580,15 @@ class Registro:
             raise ValueError
 
         try:            
-            digito_sexo=int(carnet[-1])
+            digito_sexo=int(carnet[-2])
 
             if digito_sexo % 2==0:
-                if self.sexo_var.get()!='F':
-                    messagebox.showinfo('Alerta','El sexo debe ser femenino')
+                if self.sexo_var.get()!='M':
+                    messagebox.showinfo('Alerta','El sexo debe ser masculino')
                     raise Exception
             else:
-                if self.sexo_var.get() != 'M':
-                    messagebox.showinfo('Alerta','El sexo debería ser masculino')
+                if self.sexo_var.get() != 'F':
+                    messagebox.showinfo('Alerta','El sexo debería ser femenino')
                     raise Exception
 
         except Exception:
