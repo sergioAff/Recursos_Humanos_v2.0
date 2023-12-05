@@ -362,6 +362,9 @@ class Registro:
                 
     def validar_especialidad(self):
         nombre_especialidad = self.entries['nombre'].get()
+        if nombre_especialidad =='':
+            messagebox.showerror('Alerta','No puede estar vacío el nombre de la especialidad')
+            raise Exception
         
         if self.tipo == 'Actualizar' and nombre_especialidad ==self.datos[1]:
             return
@@ -377,6 +380,9 @@ class Registro:
             
     def validar_demanda(self):
         demanda = self.entries['nombreCarrera'].get()
+        if demanda =='':
+            messagebox.showerror('Alerta','No puede estar vacía la demanda')
+            raise Exception
 
         if self.tipo == 'Actualizar' and demanda ==self.datos[1]:
             return
@@ -392,6 +398,9 @@ class Registro:
             
     def validar_municipio(self):
         municipio = self.entries['nombre'].get()
+        if municipio =='':
+            messagebox.showerror('Alerta','No puede estar vacía el municipio')
+            raise Exception
 
         if self.tipo == 'Actualizar' and municipio ==self.datos[1]:
             return
@@ -408,6 +417,10 @@ class Registro:
     def validar_provincia(self):
         provincia = self.entries['nombre'].get()
 
+        if provincia =='':
+            messagebox.showerror('Alerta','No puede estar vacía la provincia')
+            raise Exception
+        
         if self.tipo == 'Actualizar' and provincia ==self.datos[1]:
             return
 
@@ -422,6 +435,9 @@ class Registro:
     
     def validar_entidad(self):
         entidad = self.entries['nombre'].get()
+        if entidad =='':
+            messagebox.showerror('Alerta','No puede estar vacío el nombre de la entidad')
+            raise Exception
 
         if self.tipo == 'Actualizar' and entidad ==self.datos[1]:
             return
@@ -451,6 +467,9 @@ class Registro:
                         
     def validar_organismo(self):
         organismo = self.entries['nombre'].get()
+        if organismo =='':
+            messagebox.showerror('Alerta','No puede estar vacío el nombre del organismo')
+            raise Exception
 
         if self.tipo == 'Actualizar' and organismo ==self.datos[1]:
             return
@@ -466,6 +485,9 @@ class Registro:
 
     def validar_carrera(self):
         carrera = self.entries['nombre'].get()
+        if carrera =='':
+            messagebox.showerror('Alerta','No puede estar vacío el nombre de la carrera')
+            raise Exception
 
         if self.tipo == 'Actualizar' and carrera ==self.datos[1]:
             return
