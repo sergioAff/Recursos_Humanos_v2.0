@@ -5,6 +5,7 @@ from tkinter import messagebox
 import re
 from tkinter import ttk
 from datetime import datetime
+import traceback
 class Registro:
 
     def __init__(self, archivo, tabla_actual, tipo, actualizar_treeview_callback):
@@ -141,8 +142,8 @@ class Registro:
 
                     elif atributo[1].lower()=='rangoedad':
                         self.rango_edad=StringVar()
-                        self.opciones=('','Menores de 30','De 30 a 50', 'De 51 a 60', 'Mayores de 60')
-                        self.spin_edades=Spinbox(self.marco, values=self.opciones,textvariable=self.rango_edad, font=('Comic Sans',15))
+                        self.opcionesEdades=('','Menores de 30','De 30 a 50', 'De 51 a 60', 'Mayores de 60')
+                        self.spin_edades=Spinbox(self.marco, values=self.opcionesEdades,textvariable=self.rango_edad, font=('Comic Sans',15))
                         self.spin_edades.config(state='readonly')
                         self.spin_edades.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
                         self.entries[atributo[1]]=self.spin_edades
@@ -175,7 +176,6 @@ class Registro:
   
     def limpiar(self):
         for entry in self.entries.values():
-            print(entry)
             if isinstance(entry, ttk.Combobox):
                 entry.set('')  
             elif isinstance(entry, Entry):
@@ -206,9 +206,6 @@ class Registro:
             self.cantidad_validacion()
             self.validar_demanda() 
 
-        elif self.tabla_actual=='Trabajador':
-            self.validar_correo()
-
         elif self.tabla_actual=='Especialidad':
             self.validar_especialidad()
 
@@ -229,6 +226,8 @@ class Registro:
 
         elif self.tabla_actual=='Trabajador':
             self.validar_correo()
+            self.validar_correo_existente()
+            self.validar_edad_y_sexo()
         
     # Todos los campos obligatorios están llenos, guardar el registro en la base de datos
         self.valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -244,12 +243,11 @@ class Registro:
                 self.actualizar_treeview(self.tabla_actual)
                 messagebox.showinfo("Éxito", "Registro guardado exitosamente.")
             except sql.IntegrityError:
-                messagebox.showerror('Error','ID incorrecto o faltante')
+                messagebox.showerror('Error','El ID ya existe')
             self.window.destroy()
 
     def cargar(self, datos):
         self.datos = datos
-
         # Carga las Entry widgets con los nuevos datos
         for i, atributo in enumerate(self.atributos):
             entry_widget = self.entries[atributo[1]]
@@ -262,9 +260,13 @@ class Registro:
                         entry_widget.delete(0, END)
                         entry_widget.insert(0, datos[i])
                         entry_widget.config(state='readonly')
+                    elif isinstance(entry_widget,ttk.Combobox):
+                        entry_widget.set(datos[i])
+
                     else:
                         entry_widget.delete(0, END)
                         entry_widget.insert(0, datos[i])
+
                 else:
                     self.cargar_demas_valores(atributo, datos[i])
 
@@ -294,7 +296,9 @@ class Registro:
             self.validar_demanda() 
         
         elif self.tabla_actual=='Trabajador':
+            self.validar_correo()
             self.validar_correo_existente()
+            self.validar_edad_y_sexo()
 
         elif self.tabla_actual=='Especialidad':
             self.validar_especialidad() 
@@ -313,9 +317,6 @@ class Registro:
 
         elif self.tabla_actual=='Carrera':
             self.validar_carrera()
-
-        elif self.tabla_actual=='Trabajador':
-            self.validar_correo()
 
         # Verificar si hay cambios en los valores antes de la actualización
         nuevos_valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -436,7 +437,6 @@ class Registro:
             
     def validar_correo_existente(self):
         correo=self.entries['correo'].get()
-        print(self.datos)
         if self.tipo=='Actualizar' and correo==self.datos[3]:
             return
         
@@ -479,44 +479,82 @@ class Registro:
                 messagebox.showerror('Error', f"{carrera} ya existe. Ingrese un nombre único.")
                 raise ValueError
     
-    def obtener_edad_y_sexo(self):
+    def validar_edad_y_sexo(self):
         year=datetime.now().year
+        try:
+            entry=self.entries['id']
+            carnet=entry.get()
 
-        carnet=self.entries['id'].get
-
-        if len(carnet)!=11 or not carnet.isdigit() :
-            messagebox.showerror('Error','Carnet incorrecto')
-            return
+            if len(carnet)!=11 or not carnet.isdigit() :
+                messagebox.showerror('Error','Carnet incorrecto')
+                raise Exception
         
-        dia_nacimiento = int(carnet[4:6])
-        mes_nacimiento = int(carnet[2:4])
-        
-        # Ajustar para manejar el escenario de un solo dígito para el año con cero adelante
-        ano_nacimiento_str = carnet[0:2]
-        ano_nacimiento = int(ano_nacimiento_str) + (1900 if ano_nacimiento_str.startswith('0') else 2000)
+            mes_nacimiento = int(carnet[2:4])
+            if mes_nacimiento <1 or mes_nacimiento>12:
+                messagebox.showinfo('Alerta','Carnet incorrecto en el 3er o 4to número')
+                raise Exception
+            else:
+                dia_nacimiento = int(carnet[4:6])
+                if mes_nacimiento==2 and dia_nacimiento >29:
+                    messagebox.showinfo('Alerta','Carnet incorrecto en el 5to o 6to número, febrero no tiene mas de 29 días')
+                    raise Exception
+                elif dia_nacimiento<1 or dia_nacimiento>31:
+                    messagebox.showinfo('Alerta','Carnet incorrecto en el 5to o 6to número')
+                    raise Exception
 
-        # Calcular la edad
-        edad = year - ano_nacimiento
 
-        # Validar si ya ha cumplido años en este año
-        if mes_nacimiento > datetime.now().month or (mes_nacimiento == datetime.now().month and dia_nacimiento > datetime.now().day):
-            edad -= 1
+            # Ajustar para manejar el escenario de un solo dígito para el año con cero adelante
+            ano_nacimiento_str = carnet[0:2]
+            ano_nacimiento = int(ano_nacimiento_str) + (2000 if ano_nacimiento_str.startswith('0') or ano_nacimiento_str.startswith('00') else 1900)
 
-        # Calcular el valor para el campo rangoEdad
-        if edad < 30:
-            rango_edad_valor = self.opciones[1]
-        elif 30 <= edad <= 50:
-            rango_edad_valor = self.opciones[2]
-        elif 51 <= edad <= 60:
-            rango_edad_valor = self.opciones[3]
-        else:
-            rango_edad_valor = self.opciones[4]
+            # Calcular la edad
+            edad = year - ano_nacimiento
 
-        if rango_edad_valor != self.entries["rangoEdad"].get():
-            messagebox.showerror('Error','el rango de edad no coincide con el carnet')
-            return
-        
+            # Validar si ya ha cumplido años en este año
+            if mes_nacimiento > datetime.now().month or (mes_nacimiento == datetime.now().month and dia_nacimiento > datetime.now().day):
+                edad -= 1
+
+            if edad < 30:
+                if self.spin_edades.get() != self.opcionesEdades[1]:
+                    messagebox.showinfo('Alerta','La edad debería ser menor de 30')
+                    raise Exception
+
+            elif 30 <= edad <= 50:
+                if self.spin_edades.get() != self.opcionesEdades[2]:
+                    messagebox.showinfo('Alerta','La edad debería estar entre 30 y 50')
+                    raise Exception
             
+            elif 51 <= edad <= 60 :
+                if self.spin_edades.get() != self.opcionesEdades[3]:
+                    messagebox.showinfo('Alerta','La edad debería estar entre 51 y 60')
+                    raise Exception
+            
+            elif 61 <= edad <=99 :
+                if self.spin_edades.get() != self.opcionesEdades[4]:
+                    messagebox.showinfo('Alerta','La edad debería ser mayor de 60')
+                    raise Exception
+        
+        except Exception:
+            messagebox.showinfo('Alerta','Verifica el id')
+            raise ValueError
+
+        try:            
+            digito_sexo=int(carnet[-1])
+
+            if digito_sexo % 2==0:
+                if self.sexo_var.get()!='F':
+                    messagebox.showinfo('Alerta','El sexo debe ser femenino')
+                    raise Exception
+            else:
+                if self.sexo_var.get() != 'M':
+                    messagebox.showinfo('Alerta','El sexo debería ser masculino')
+                    raise Exception
+
+        except Exception:
+            messagebox.showinfo('Alerta','Revisa el sexo')
+            raise ValueError
+
+
     def actualizar_codigo_var(self, identificador):
         nombre_seleccionado = self.identificadores_combobox[identificador].get()
         _, atributo = identificador.split('_')
