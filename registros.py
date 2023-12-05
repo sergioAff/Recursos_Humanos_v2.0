@@ -129,8 +129,8 @@ class Registro:
 
                     elif atributo[1].lower()=='tipoplaza':
                         self.tipo_plaza=StringVar()
-                        self.opciones=('','Plaza fija','Adiestr. laboral con plaza fija','Adiestr. laboral sin plaza fija','Rva. científica con plaza fija','Rva. científica sin plaza fija','Disponibles', 'Sin plaza')
-                        self.spin_plaza=Spinbox(self.marco, values=self.opciones, textvariable=self.tipo_plaza, font=('Cosmic Sans',15))
+                        self.opcionesPlaza=('','Plaza fija','Adiestr. laboral con plaza fija','Adiestr. laboral sin plaza fija','Rva. científica con plaza fija','Rva. científica sin plaza fija','Disponibles', 'Sin plaza')
+                        self.spin_plaza=Spinbox(self.marco, values=self.opcionesPlaza, textvariable=self.tipo_plaza, font=('Cosmic Sans',15))
                         self.spin_plaza.config(state='readonly')
                         self.spin_plaza.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
                         self.entries[atributo[1]]=self.spin_plaza                
@@ -150,16 +150,16 @@ class Registro:
 
                     elif atributo[1].lower()=='nivelensenanza':
                         self.nivel=StringVar()
-                        self.opciones=('','Nivel Superior','Técnico medio','Obrero calificado')
-                        self.spin_niveles=Spinbox(self.marco, values=self.opciones,textvariable=self.nivel, font=('Comic Sans',15))
+                        self.opcionesNivel=('','Nivel Superior','Técnico medio','Obrero calificado')
+                        self.spin_niveles=Spinbox(self.marco, values=self.opcionesNivel,textvariable=self.nivel, font=('Comic Sans',15))
                         self.spin_niveles.config(state='readonly')
                         self.spin_niveles.grid(row=atributo[0], column=1, padx=5,pady=5, sticky=W)
                         self.entries[atributo[1]]=self.spin_niveles
 
                     elif atributo[1].lower()=='causa':
                         self.casuas=StringVar()
-                        self.opciones=('','Jubilación','Personal')
-                        self.sepin_causas=Spinbox(self.marco, values=self.opciones, textvariable=self.casuas, font=('Comic Sans',15))
+                        self.opcionesCausa=('','Jubilación','Personal')
+                        self.sepin_causas=Spinbox(self.marco, values=self.opcionesCausa, textvariable=self.casuas, font=('Comic Sans',15))
                         self.sepin_causas.config(state='readonly')
                         self.sepin_causas.grid(row=atributo[0], column=1, padx=5,pady=5, sticky=W)
                         self.entries[atributo[1]]=self.sepin_causas
@@ -228,6 +228,9 @@ class Registro:
             self.validar_correo()
             self.validar_correo_existente()
             self.validar_edad_y_sexo()
+        
+        elif self.tabla_actual=='Bajas':
+            self.validar_causa()
         
     # Todos los campos obligatorios están llenos, guardar el registro en la base de datos
         self.valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -317,6 +320,9 @@ class Registro:
 
         elif self.tabla_actual=='Carrera':
             self.validar_carrera()
+    
+        elif self.tabla_actual=='Bajas':
+            self.validar_causa()
 
         # Verificar si hay cambios en los valores antes de la actualización
         nuevos_valores = [entry_widget.get() for entry_widget in self.entries.values()]
@@ -381,7 +387,7 @@ class Registro:
     def validar_demanda(self):
         demanda = self.entries['nombreCarrera'].get()
         if demanda =='':
-            messagebox.showerror('Alerta','No puede estar vacía la demanda')
+            messagebox.showerror('Alerta','No puede estar vacía el nombre de la Carrera')
             raise Exception
 
         if self.tipo == 'Actualizar' and demanda ==self.datos[1]:
@@ -500,7 +506,19 @@ class Registro:
             if count > 0:
                 messagebox.showerror('Error', f"{carrera} ya existe. Ingrese un nombre único.")
                 raise ValueError
-    
+        
+        if self.spin_niveles.get()==self.opcionesNivel[0]:
+            messagebox.showinfo('Alerta','El nivel de enseñanza no puede estar vacío')
+            raise Exception
+        
+    def validar_causa(self):
+        causa=self.entries['causa'].get()
+        
+
+        if self.sepin_causas.get()==self.opcionesCausa[0]:
+            messagebox.showinfo('Alerta','La causa no puede estar vacía')
+            raise Exception
+        
     def validar_edad_y_sexo(self):
         year=datetime.now().year
         try:
