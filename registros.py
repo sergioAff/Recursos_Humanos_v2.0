@@ -535,7 +535,7 @@ class Registro:
                     raise Exception
         
         except Exception:
-            messagebox.showinfo('Alerta','Verifica el id')
+            messagebox.showinfo('Alerta','Verifica el id o el rango de edad')
             raise ValueError
 
         try:            
@@ -551,7 +551,7 @@ class Registro:
                     raise Exception
 
         except Exception:
-            messagebox.showinfo('Alerta','Revisa el sexo')
+            messagebox.showinfo('Alerta','Revisa el id o el sexo')
             raise ValueError
 
 
