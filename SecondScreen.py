@@ -26,7 +26,7 @@ class Second_Screen:
         self.botonFiltrar=Button() 
 
         try:
-            # Selección del archivo de base de datos
+            # Cargar el archivo de la base de datos
             self.archivo ='recursosHumanos.db'
         except Exception:
             messagebox.showerror('Error','Error al abrir la base de datos')
@@ -102,8 +102,8 @@ class Second_Screen:
         self.botonTablas.place(
             height=35,
             width=110,
-            x=22,
-            y=28,
+            x=20,
+            y=26,
         )
 
     def show_table_and_buttons(self, table_name):
@@ -114,8 +114,8 @@ class Second_Screen:
 
     def create_all_buttons(self, tree):
         # Creación de los botones de la interfaz gráfica
-        self.create_button(self.photoAnadir, 34, 110, 160, 26, lambda: self.create_command("Añadir", tree))
-        self.create_button(self.photoActualizar, 35, 183, 310, 21, lambda: self.create_command("Actualizar", tree))
+        self.create_button(self.photoAnadir, 32, 110, 160, 26, lambda: self.create_command("Añadir", tree))
+        self.create_button(self.photoActualizar, 35, 182, 310, 21, lambda: self.create_command("Actualizar", tree))
         self.create_button(self.photoBorrar, 40, 110, 540, 22, lambda: self.create_command("Borrar", tree))
 
     def create_button(self, image, height, width, x, y, command):
@@ -204,6 +204,7 @@ class Second_Screen:
             self.opciones = [fila[0] for fila in self.cursor.fetchall() if fila[0] != 'sqlite_sequence']
 
     def tablas(self, frame_mostrar, archivo, tabla):
+        #Funcion para crear el treeview donde iran los registros
         def crear_treeview(frame, atributos, valores):
             tree = ttk.Treeview(frame, columns=atributos, show='headings', height=min(len(valores), 10))
 
@@ -213,8 +214,8 @@ class Second_Screen:
             style.configure("Treeview.Treeview", background="#E1E1E1", fieldbackground="#E1E1E1", foreground="black")
 
             if tabla.lower() == 'carrera':
-                self.botonEspecialidad.config(image=self.photoEspecialidad,cursor='hand2',command= lambda:self.create_command('Especialidad',tree))
-                self.botonEspecialidad.place(height=31,width=205,x=690,y=29)
+                self.botonEspecialidad.config(image=self.photoEspecialidad,cursor='hand2',borderwidth=0, highlightthickness=0,command= lambda:self.create_command('Especialidad',tree))
+                self.botonEspecialidad.place(height=29,width=205,x=690,y=29)
             else:
                 self.botonEspecialidad.destroy()
                 self.botonEspecialidad=Button() 
@@ -241,8 +242,9 @@ class Second_Screen:
                         command=lambda opt=option: filtrar_por_rango(opt)              
                     )
                 
-                self.botonFiltrar.place(height=31, width=100, x=690, y=29)
+                self.botonFiltrar.place(height=30, width=100, x=690, y=28)
 
+                #Funcion para filtrar trabajadores segun su edad
                 def filtrar_por_rango(rango_seleccionado):
 
                     # Obtener los registros que cumplen con el rango de edad seleccionado
@@ -335,6 +337,7 @@ class Second_Screen:
                 traceback.print_exc()
 
     def borrar(self, registros, tabla_actual):
+        #Funcion para eliminar el/los registros seleccionados
         while True:
             self.respuesta=respuesta = messagebox.askquestion("Confirmar eliminación", "¿Estás seguro que deseas eliminar?")
 
@@ -371,6 +374,7 @@ class Second_Screen:
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo borrar el registro: {str(e)}")
 
+    #Funcion que actualiza el treeview despues de ciertas acciones
     def actualizar_treeview(self, tabla_actual):
         try:
             with sql.connect(self.archivo) as conn:
