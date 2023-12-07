@@ -15,6 +15,7 @@ class Registro:
         self.actualizar_treeview=actualizar_treeview_callback
         self.entries={}
 
+        #Creacion del TopLevel
         self.window = Toplevel() 
         self.window.title(self.tipo)
         self.window.resizable(0, 0)
@@ -40,6 +41,7 @@ class Registro:
         self.frame_botones = Frame(self.window)
         self.frame_botones.pack(side='bottom')
 
+        # Se cargan los botones en el TopLevel
         if self.tipo == 'Añadir':
 
             self.boton_registrar = Button(self.frame_botones, text="REGISTRAR", height=2, width=10, bg="green", fg="black",
@@ -60,6 +62,7 @@ class Registro:
                                 fg="black", font=("Comic Sans", 10, "bold"))
         self.boton_cancelar.pack(side='left', padx=3, pady=3)
         
+        # Se cargan los atributos de la tabla donde se quiere trabajar
         with sql.connect(self.archivo) as conn:
             self.cursor = conn.cursor()
             self.cursor.execute(f'PRAGMA table_info({tabla_actual})')
@@ -74,6 +77,7 @@ class Registro:
             self.entries = {}  # Diccionario para almacenar las Entry widgets
             self.identificadores_combobox = {}
 
+            # Se cargan Labels que mostraran los nombres de las llaves foraneas
             for atributo in self.atributos:
                 if atributo[1] in self.foraneas:
                     self.label = Label(self.marco, text=atributo[1], font=('Comic Sans', 15))
@@ -99,18 +103,22 @@ class Registro:
                     # Al tocar el combobox, actualizar la variable controladora con el código correspondiente
                     combobox.bind("<<ComboboxSelected>>", lambda event, identificador=identificador_combobox: self.actualizar_codigo_var(identificador))
                     
+                    #Se impide que se puedan pasar valores por teclado a los Comboboxes
                     combobox['state']='readonly'
 
                     self.entries[atributo[1]] = combobox  # Almacenar el combobox en el diccionario de entries
 
+                    # El Combobox para codigoMunicpio estará deshabilitado
                     if atributo[1]=='codigoMunicipio':
                         combobox['state']='disable'
-
+                
+                #Se muestran los demas atributos que no son llaves foraneas
                 else:
 
                     self.label = Label(self.marco, text=atributo[1], font=('Comic Sans', 15))
                     self.label.grid(row=atributo[0], column=0, sticky=W, padx=5, pady=5)
 
+                    #En caso de que el atributo sea 'sexo' se hacen 2 Radiobuttons para seleccionar una opcion
                     if atributo[1].lower()=='sexo':
                         self.sexo_var=StringVar()
                         self.radio_masculino=Radiobutton(self.marco, text="M", font=('Cosmic Sans',15), variable=self.sexo_var, value='M')
@@ -121,12 +129,14 @@ class Registro:
                
                         self.entries[atributo[1]] = self.sexo_var
 
+                    # Se crea el entry de 'correo'
                     elif atributo[1].lower() == 'correo':
                         self.correo = StringVar()
                         self.entry_correo = Entry(self.marco, textvariable=self.correo, font=('Comic Sans', 15))
                         self.entry_correo.grid(row=atributo[0], column=1, padx=5, pady=5)
                         self.entries[atributo[1]] = self.entry_correo
 
+                    # Se crea un Spinbox con las opciones para el tipo de plaza
                     elif atributo[1].lower()=='tipoplaza':
                         self.tipo_plaza=StringVar()
                         self.opcionesPlaza=('','Plaza fija','Adiestr. laboral con plaza fija','Adiestr. laboral sin plaza fija','Rva. científica con plaza fija','Rva. científica sin plaza fija','Disponibles', 'Sin plaza')
@@ -135,11 +145,13 @@ class Registro:
                         self.spin_plaza.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
                         self.entries[atributo[1]]=self.spin_plaza                
                 
+                    # Se crea un Spinbox para selccionar la cantidad en la tabla 'Demanda'
                     elif atributo[1].lower()=='cantidad':
                         self.cantidad=Spinbox(self.marco, from_=0, to=1000, width= 10, font=('Comic Sans', 15))
                         self.cantidad.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
                         self.entries[atributo[1]]=self.cantidad
 
+                    # Se crea un Spinbox para las opciones del rango de edad
                     elif atributo[1].lower()=='rangoedad':
                         self.rango_edad=StringVar()
                         self.opcionesEdades=('','Menores de 30','De 30 a 50', 'De 51 a 60', 'Mayores de 60')
@@ -148,6 +160,7 @@ class Registro:
                         self.spin_edades.grid(row=atributo[0], column=1, padx=5, pady=5, sticky=W)
                         self.entries[atributo[1]]=self.spin_edades
 
+                    #Se crea un Spinbox con las opciones del nivel de enseñanza 
                     elif atributo[1].lower()=='nivelensenanza':
                         self.nivel=StringVar()
                         self.opcionesNivel=('','Nivel Superior','Técnico medio','Obrero calificado')
@@ -156,6 +169,7 @@ class Registro:
                         self.spin_niveles.grid(row=atributo[0], column=1, padx=5,pady=5, sticky=W)
                         self.entries[atributo[1]]=self.spin_niveles
 
+                    #Se crea un Spinbox con las opciones de causas en la tabla  'Bajas' 
                     elif atributo[1].lower()=='causa':
                         self.casuas=StringVar()
                         self.opcionesCausa=('','Jubilación','Personal')
@@ -175,6 +189,7 @@ class Registro:
                         self.entry.configure(state='readonly')
   
     def limpiar(self):
+        #Funcion para eliminar todos los valores en el registro
         for entry in self.entries.values():
             if isinstance(entry, ttk.Combobox):
                 entry.set('')  
@@ -202,6 +217,7 @@ class Registro:
                 messagebox.showerror("Error", f"El campo '{atributo[1]}' no puede estar vacío.")
                 return
         
+        # Validaciones segun la tabla abierta
         if self.tabla_actual =='Demanda':
             self.cantidad_validacion()
             self.validar_demanda() 
@@ -238,6 +254,7 @@ class Registro:
         if self.atributos[0][1].lower()=='sexo':
             self.valores[0]=self.sexo_var.get()
 
+        #En caso de estar todos los datos correctos guardar los cambios en la base de datos
         with sql.connect(self.archivo) as conn:
             self.cursor = conn.cursor()
             try:
@@ -246,6 +263,7 @@ class Registro:
                 self.actualizar_treeview(self.tabla_actual)
                 messagebox.showinfo("Éxito", "Registro guardado exitosamente.")
             except sql.IntegrityError:
+                #Si se repite el ID salta este error
                 messagebox.showerror('Error','El ID ya existe')
                 raise Exception
             self.window.destroy()
@@ -260,11 +278,13 @@ class Registro:
             if i < len(datos):
                 if isinstance(entry_widget, Entry) or isinstance(entry_widget,Spinbox) :
                     if entry_widget.cget('state') == 'readonly':
+                        #Si el entry esta deshabilitado se pasa a modo normal para poder cargar los datos y mostrarlos 
                         entry_widget.config(state='normal')
                         entry_widget.delete(0, END)
                         entry_widget.insert(0, datos[i])
                         entry_widget.config(state='readonly')
                     elif isinstance(entry_widget,ttk.Combobox):
+                        #Si el Combobox esta deshabilitado se pasa a modo normal para poder cargar los datos y mostrarlo
                         entry_widget.set(datos[i])
 
                     else:
@@ -272,9 +292,11 @@ class Registro:
                         entry_widget.insert(0, datos[i])
 
                 else:
+                    #Cargar los datos de rangoEdad, tipoPlaza o de sexo
                     self.cargar_demas_valores(atributo, datos[i])
 
     def cargar_demas_valores(self, atributo, valor):
+        #Funcion para cargar los datos de rangoEdad, tipoPlaza o de sexo
         if atributo[1].lower() == 'rangoedad':
             self.rango_edad.set(valor)
         elif atributo[1].lower() == 'tipoplaza':
@@ -295,6 +317,7 @@ class Registro:
         # guarda el valor de la llave primaria
         primary_key_value = self.entries[primary_key_name].get()
 
+        # Validaciones segun la tabla abierta
         if self.tabla_actual =='Demanda':
             self.cantidad_validacion()
             self.validar_demanda() 
@@ -368,6 +391,7 @@ class Registro:
             raise ValueError
                 
     def validar_especialidad(self):
+        #Funcion para validar que el campo correspondiente a 'nombre' en la tabla Especialidad no esté vacío ni se repitan los valores
         nombre_especialidad = self.entries['nombre'].get()
         if nombre_especialidad =='':
             messagebox.showerror('Alerta','No puede estar vacío el nombre de la especialidad')
@@ -377,6 +401,7 @@ class Registro:
             return
 
         with sql.connect(self.archivo) as conn:
+            #En caso de no haber conflictos se guardan los datos en la base de datos
             cursor = conn.cursor()
             cursor.execute('SELECT COUNT(*) FROM Especialidad WHERE nombre=?', (nombre_especialidad,))
             count = cursor.fetchone()[0]
@@ -386,6 +411,7 @@ class Registro:
                 raise ValueError
             
     def validar_demanda(self):
+        #Funcion para validar que el campo correspondiente a 'nombreCarrera' en la tabla Demanda no esté vacío ni se repitan los valores
         demanda = self.entries['nombreCarrera'].get()
         if demanda =='':
             messagebox.showerror('Alerta','No puede estar vacía el nombre de la Carrera')
@@ -395,6 +421,7 @@ class Registro:
             return
 
         with sql.connect(self.archivo) as conn:
+            #En caso de no haber conflictos se guardan los datos en la base de datos
             cursor = conn.cursor()
             cursor.execute('SELECT COUNT(*) FROM Demanda WHERE nombreCarrera=?', (demanda,))
             count = cursor.fetchone()[0]
@@ -404,6 +431,7 @@ class Registro:
                 raise ValueError
             
     def validar_municipio(self):
+        #Funcion para validar que el campo correspondiente a 'nombre' en la tabla Municipio no esté vacío ni se repitan los valores
         municipio = self.entries['nombre'].get()
         if municipio =='':
             messagebox.showerror('Alerta','No puede estar vacía el municipio')
@@ -413,6 +441,7 @@ class Registro:
             return
 
         with sql.connect(self.archivo) as conn:
+            #En caso de no haber conflictos se guardan los datos en la base de datos
             cursor = conn.cursor()
             cursor.execute('SELECT COUNT(*) FROM Municipio WHERE nombre=?', (municipio,))
             count = cursor.fetchone()[0]
@@ -422,8 +451,8 @@ class Registro:
                 raise ValueError
     
     def validar_provincia(self):
+        #Funcion para validar que el campo correspondiente a 'nombre' en la tabla Provincia no esté vacío ni se repitan los valores
         provincia = self.entries['nombre'].get()
-
         if provincia =='':
             messagebox.showerror('Alerta','No puede estar vacía la provincia')
             raise Exception
@@ -432,6 +461,7 @@ class Registro:
             return
 
         with sql.connect(self.archivo) as conn:
+            #En caso de no haber conflictos se guardan los datos en la base de datos
             cursor = conn.cursor()
             cursor.execute('SELECT COUNT(*) FROM Provincia WHERE nombre=?', (provincia,))
             count = cursor.fetchone()[0]
@@ -441,6 +471,7 @@ class Registro:
                 raise ValueError
     
     def validar_entidad(self):
+        #Funcion para validar que el campo correspondiente a 'nombre' en la tabla Entidad no esté vacío ni se repitan los valores
         entidad = self.entries['nombre'].get()
         if entidad =='':
             messagebox.showerror('Alerta','No puede estar vacío el nombre de la entidad')
@@ -450,6 +481,7 @@ class Registro:
             return
 
         with sql.connect(self.archivo) as conn:
+            #En caso de no haber conflictos se guardan los datos en la base de datos
             cursor = conn.cursor()
             cursor.execute('SELECT COUNT(*) FROM Entidad WHERE nombre=?', (entidad,))
             count = cursor.fetchone()[0]
@@ -459,11 +491,13 @@ class Registro:
                 raise ValueError
             
     def validar_correo_existente(self):
+        #Funcion para validar que el campo correspondiente a 'correo' en la tabla Trabajador no se repitan los valores 
         correo=self.entries['correo'].get()
         if self.tipo=='Actualizar' and correo==self.datos[3]:
             return
         
         with sql.connect(self.archivo)as conn:
+            #En caso de no haber conflictos se guardan los datos en la base de datos
             cursor=conn.cursor()
             cursor.execute('SELECT COUNT(*) FROM Trabajador WHERE correo=?',(correo,))
             count =cursor.fetchall()[0]
@@ -473,6 +507,7 @@ class Registro:
                 raise ValueError
                         
     def validar_organismo(self):
+        #Funcion para validar que el campo correspondiente a 'nombre' en la tabla Organismo no se repitan los valores ni esté vacío
         organismo = self.entries['nombre'].get()
         if organismo =='':
             messagebox.showerror('Alerta','No puede estar vacío el nombre del organismo')
@@ -482,6 +517,7 @@ class Registro:
             return
 
         with sql.connect(self.archivo) as conn:
+            #En caso de no haber conflictos se guardan los datos en la base de datos
             cursor = conn.cursor()
             cursor.execute('SELECT COUNT(*) FROM Organismo WHERE nombre=?', (organismo,))
             count = cursor.fetchone()[0]
@@ -491,6 +527,7 @@ class Registro:
                 raise ValueError
 
     def validar_carrera(self):
+        #Funcion para validar que el campo correspondiente a 'nombre' en la tabla Carrera no se repitan los valores ni esté vacío
         carrera = self.entries['nombre'].get()
         if carrera =='':
             messagebox.showerror('Alerta','No puede estar vacío el nombre de la carrera')
@@ -500,6 +537,7 @@ class Registro:
             return
 
         with sql.connect(self.archivo) as conn:
+            #En caso de no haber conflictos se guardan los datos en la base de datos
             cursor = conn.cursor()
             cursor.execute('SELECT COUNT(*) FROM Carrera WHERE nombre=?', (carrera,))
             count = cursor.fetchone()[0]
@@ -513,14 +551,14 @@ class Registro:
             raise Exception
         
     def validar_causa(self):
+        #Funcion para validar que el campo correspondiente a 'causa' en la tabla Bajas no esté vacío
         causa=self.entries['causa'].get()
-        
-
         if self.sepin_causas.get()==self.opcionesCausa[0]:
             messagebox.showinfo('Alerta','La causa no puede estar vacía')
             raise Exception
         
     def validar_edad_y_sexo(self):
+        #Función para validar el rango de edad correcto y el sexo segun el carnet de identidad
         year=datetime.now().year
         try:
             entry=self.entries['id']

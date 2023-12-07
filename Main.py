@@ -25,13 +25,14 @@ class Screen:
         screen_height = self.root.winfo_screenheight()
         x_position = (screen_width - self.WINDOW_WIDTH) // 2
         y_position = (screen_height - self.WINDOW_HEIGHT) // 2
-
+        
+        # Configuracion de la ventana
         self.root.geometry(f'{self.WINDOW_WIDTH}x{self.WINDOW_HEIGHT}+{x_position}+{y_position-40}')
         self.root.title('Recursos Humanos')
         self.root.resizable(0, 0)
         self.root.config(bg='#082d44')
 
-        #Centrar la ventana
+        # Cargar el icono
         try:
             self.icono = PhotoImage(file='icono.png')
             self.root.iconphoto(True, self.icono)

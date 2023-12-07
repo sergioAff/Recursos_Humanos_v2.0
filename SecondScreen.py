@@ -204,7 +204,7 @@ class Second_Screen:
             self.opciones = [fila[0] for fila in self.cursor.fetchall() if fila[0] != 'sqlite_sequence']
 
     def tablas(self, frame_mostrar, archivo, tabla):
-        #Funcion para crear el treeview donde iran los registros
+        #Funcion para crear el treeview donde estaran los registros
         def crear_treeview(frame, atributos, valores):
             tree = ttk.Treeview(frame, columns=atributos, show='headings', height=min(len(valores), 10))
 
@@ -213,6 +213,7 @@ class Second_Screen:
             style.configure("Treeview.Heading", font=('Arial', 14, 'bold'))
             style.configure("Treeview.Treeview", background="#E1E1E1", fieldbackground="#E1E1E1", foreground="black")
 
+            # Verifica si la tabla abierta es 'Carrera' para crear el boton Especialidad
             if tabla.lower() == 'carrera':
                 self.botonEspecialidad.config(image=self.photoEspecialidad,cursor='hand2',borderwidth=0, highlightthickness=0,command= lambda:self.create_command('Especialidad',tree))
                 self.botonEspecialidad.place(height=29,width=205,x=690,y=29)
@@ -220,6 +221,7 @@ class Second_Screen:
                 self.botonEspecialidad.destroy()
                 self.botonEspecialidad=Button() 
 
+            # Verifica si la tabla abierta es 'Trabajador' para crear el menu Filtrar
             if tabla.lower() == 'trabajador':
                 if self.botonFiltrar:
                     self.botonFiltrar.destroy()
@@ -236,6 +238,7 @@ class Second_Screen:
                     opciones_rango = [str(row[0]) for row in cursor.fetchall()]
                     opciones_rango.append('Todos')
 
+                # Mostrar las opciones para filtrar la edad
                 for option in opciones_rango:
                     self.botonFiltrar.menu.add_command(
                         label=option,
@@ -275,6 +278,7 @@ class Second_Screen:
             for atributo in atributos:
                 tree.heading(atributo, text=atributo)
 
+                # Determina el ancho que tendra una columna en el treeview para que quepa toda la informacion
                 ancho = max(tree.heading(atributo)["text"].__len__(), *[len(str(valor[atributos.index(atributo)])) for valor in valores])
                 tree.column(atributo, width=ancho * 15)
 
@@ -286,6 +290,7 @@ class Second_Screen:
         for widget in frame_mostrar.winfo_children():
             widget.destroy()
 
+        # Muestra un label con la tabla que esta abierta
         titulo_tabla = Label(text=f'Tabla: {tabla}', anchor='w')
         titulo_tabla.config(bg='#082d44', font=(['Arial', 20]), fg='white')
         titulo_tabla.place(

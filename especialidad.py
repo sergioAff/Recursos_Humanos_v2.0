@@ -12,6 +12,7 @@ class Especialidad:
         self.tabla_actual=tabla_actual
         self.codigo_carrera=registro[0]
 
+        # Creacion del TopLevel
         self.window_especialidades=Toplevel()
         self.window_especialidades.title("Especialidades")
         self.window_especialidades.resizable(0,0)
@@ -32,6 +33,7 @@ class Especialidad:
 
         self.titulo_especialidades = Label(self.window_especialidades, text=f'Modificar las especialidades de {self.registro[1]}', fg='black', font=('Comic Sans', 13, 'bold'), pady=5).pack()
 
+        # Carga el logo
         self.imagen_registro = Image.open("nuevo_usuario.png")
         self.nueva_imagen = self.imagen_registro.resize((40, 40))
         self.render = ImageTk.PhotoImage(self.nueva_imagen)
@@ -39,16 +41,19 @@ class Especialidad:
         self.label_imagen.image = self.render
         self.label_imagen.pack(pady=5)
 
+        # Frame donde iran las especialidades
         self.marco = LabelFrame(self.window_especialidades, text="Especialidades", font=("Comic Sans", 10, "bold"))
         self.marco.config(bd=2, pady=5)
         self.marco.pack()
 
+        # Frame donde iran los botones
         self.frame_botones = Frame(self.window_especialidades)
         self.frame_botones.pack(side='bottom')
 
         self.boton_salir=Button(self.frame_botones, text='SALIR', command=lambda:self.window_especialidades.destroy(), height=2, width=10, bg='red',fg='black', font=('Comic Sans',10,'bold'))
         self.boton_salir.pack(side='left',padx=3,pady=3)
 
+        # Se cargan las especialidades y se muestran en caso de haber
         with sql.connect(self.archivo) as conn:
             self.cursor=conn.cursor()
             self.cursor.execute('SELECT nombre FROM Especialidad WHERE codigoCarrera=?', (self.codigo_carrera,))
@@ -71,13 +76,14 @@ class Especialidad:
                     self.fila+=1
 
     def confirmar_eliminar(self, especialidad):
+        
         respuesta = messagebox.askokcancel("Confirmar", f"¿Eliminar la especialidad '{especialidad}'?")
         if respuesta:
             # Eliminar la especialidad de la base de datos y actualizar la GUI
             self.eliminar_especialidad(especialidad)
 
     def eliminar_especialidad(self, especialidad):
-
+        
         with sql.connect(self.archivo) as conn:
             cursor = conn.cursor()
             cursor.execute('DELETE FROM Especialidad WHERE codigoCarrera=? AND nombre=?', (self.codigo_carrera, especialidad))
