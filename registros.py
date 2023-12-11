@@ -668,5 +668,3 @@ class Registro:
             municipio_combobox["values"] = nombres_municipios
 
             municipio_combobox.configure(state='readonly')
-
-    

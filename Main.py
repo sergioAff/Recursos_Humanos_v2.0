@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from PIL import Image, ImageTk
 from SecondScreen import Second_Screen
+import traceback
 
 class Screen:
     # Constantes para dimensiones de la ventana y botón
@@ -38,6 +39,7 @@ class Screen:
             self.root.iconphoto(True, self.icono)
         except Exception:
             messagebox.showerror('Alerta','No se pudo cargar el icono')
+            traceback.print_exc()
         # Carga de imágenes
         self.load_images()
 

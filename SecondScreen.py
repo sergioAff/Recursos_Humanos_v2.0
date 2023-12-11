@@ -27,7 +27,7 @@ class Second_Screen:
 
         try:
             # Cargar el archivo de la base de datos
-            self.archivo ='recursosHumanos.db'
+            self.archivo ='data.sqlite'
         except Exception:
             messagebox.showerror('Error','Error al abrir la base de datos')
             self.root.destroy()
