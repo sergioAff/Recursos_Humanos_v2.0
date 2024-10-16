@@ -34,10 +34,9 @@
 ### Imágenes
 Aquí puedes agregar algunas imágenes de la aplicación:
 
-![Pantalla Principal](![1](https://github.com/user-attachments/assets/c4d2efd1-c269-412d-acae-3f8e4169befd)
-)
-![Gestión de Empleados](![Xnip2024-10-15_22-30-40](https://github.com/user-attachments/assets/275dd459-d02a-48cf-9d9f-ef673c553521)
-)
+![Pantalla Principal](https://github.com/user-attachments/assets/c4d2efd1-c269-412d-acae-3f8e4169befd)
+
+![Gestión de Empleados](https://github.com/user-attachments/assets/275dd459-d02a-48cf-9d9f-ef673c553521)
 
 
 ### Contribuir
