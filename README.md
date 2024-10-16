@@ -39,8 +39,6 @@ Aquí puedes agregar algunas imágenes de la aplicación:
 ![Gestión de Empleados](![Xnip2024-10-15_22-30-40](https://github.com/user-attachments/assets/275dd459-d02a-48cf-9d9f-ef673c553521)
 )
 
-![Xnip2024-10-15_22-30-53](https://github.com/user-attachments/assets/7fe45a91-252d-42e6-9bf0-728bbb23ac00)
-
 
 ### Contribuir
 Las contribuciones son bienvenidas. Para colaborar, sigue estos pasos:
