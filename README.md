@@ -8,7 +8,6 @@
 - Registro de asistencias y ausencias
 - Generación de informes
 - Interfaz de usuario amigable
-- Soporte para múltiples usuarios
 
 ### Requisitos
 - Python (v3.6 o superior)
